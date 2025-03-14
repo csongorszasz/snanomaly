@@ -173,5 +173,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# PyCharm project files
 *.iml
 *.xml
+
+# Project-specific files
+datasets/*
