@@ -17,6 +17,7 @@ Develop a pipeline that can most reliably detect anomalies in datasets of supern
 - `models/`: Model classes
 - `utils/`: Utility functions
 - `visualization/`: Data visualization tools
+- `scripts/`: Standalone scripts for development
 
 ## Supporting Directories
 - `datasets/`: Supernova datasets

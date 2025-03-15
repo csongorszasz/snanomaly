@@ -14,23 +14,23 @@ dependencies = [
     "scikit-learn",
     "plotly",
     "polars",
-    "pydantic",
+    "attrs",
+    "cattrs",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "black",
-    "isort",
     "ruff",
     "pylint",
+    "mypy",
 ]
 
 [project.urls]
 Repository = "https://github.com/csongorszasz/snanomaly"
 
+[project.scripts]
+lint = "snanomaly.scripts.lint:main"
+
 [tool.pytest]
 testpaths = ["tests"]
-
-[tool.isort]
-profile = "black"
