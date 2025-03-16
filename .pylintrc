@@ -108,6 +108,8 @@ disable=
     # We anticipate #3512 where it will become optional
     fixme,
     consider-using-assignment-expr,
+    too-many-instance-attributes,
+    unsupported-binary-operation,
 
 
 [REPORTS]

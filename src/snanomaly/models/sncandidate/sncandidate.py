@@ -3,8 +3,10 @@ from attrs import define, field
 from snanomaly.models.sncandidate.date import Date
 from snanomaly.models.sncandidate.dec import Dec
 from snanomaly.models.sncandidate.floatdatum import FloatDatum
+from snanomaly.models.sncandidate.photometry import Photometry
 from snanomaly.models.sncandidate.ra import RA
 from snanomaly.models.sncandidate.source import Source
+from snanomaly.models.sncandidate.spectra import Spectra
 from snanomaly.models.sncandidate.stringdatum import StringDatum
 
 
@@ -13,7 +15,7 @@ class SNCandidate:
     """
     Represents a supernova candidate.
 
-    Follows the schema defined in the Open Astronomy Catalog Schema v1.0:
+    Follows the schema defined in the Open Astronomy Catalog Schema v1.0 but leaves out non-supernova-related fields:
         https://github.com/astrocatalogs/schema/blob/a9619d360ba330cc9d7534a9dcc4342e3b0c8085/README.md
     """
 
@@ -46,5 +48,5 @@ class SNCandidate:
     hostdec: list[Dec] = field(factory=list)
     hostoffsetang: list[FloatDatum] = field(factory=list)
     hostoffsetdist: list[FloatDatum] = field(factory=list)
-    # photometry
-    # spectra
+    photometry: list[Photometry] = field(factory=list)
+    spectra: list[Spectra] = field(factory=list)
