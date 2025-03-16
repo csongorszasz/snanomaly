@@ -1,4 +1,4 @@
-from attrs import define, field, validators
+from attrs import define, field
 
 from snanomaly.models.sncandidate.datum import Datum
 
@@ -9,4 +9,4 @@ class StringDatum(Datum):
     A Datum with value of string type.
     """
 
-    value: str = field(default=None, validator=validators.instance_of(str))
+    value: str = field(default=None)

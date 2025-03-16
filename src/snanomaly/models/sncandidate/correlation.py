@@ -1,3 +1,5 @@
+from typing import Optional
+
 from attrs import define, field
 
 
@@ -9,5 +11,5 @@ class Correlation:
 
     quantity: str = field()
     value: str | float = field()
-    kind: str = field(factory=str)
-    derived: bool = field(default=False)
+    kind: Optional[str] = field(default=None)
+    derived: Optional[bool] = field(default=None)

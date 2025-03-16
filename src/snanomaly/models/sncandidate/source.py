@@ -1,3 +1,5 @@
+from typing import Optional
+
 from attrs import define, field
 
 
@@ -9,9 +11,9 @@ class Source:
 
     name: str = field()
     alias: int = field()
-    url: str = field(factory=str)
-    bibcode: str = field(factory=str)
-    doi: str = field(factory=str)
-    arxivid: str = field(factory=str)
-    secondary: bool = field(factory=bool)
-    acknowledgement: str = field(factory=str)
+    url: Optional[str] = field(default=None)
+    bibcode: Optional[str] = field(default=None)
+    doi: Optional[str] = field(default=None)
+    arxivid: Optional[str] = field(default=None)
+    secondary: Optional[bool] = field(default=None)
+    acknowledgement: Optional[str] = field(default=None)

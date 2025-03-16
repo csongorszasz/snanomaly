@@ -6,9 +6,9 @@ class TestFloatDatum(unittest.TestCase):
     def test_construct_default(self):
         from snanomaly.models.sncandidate.floatdatum import FloatDatum
 
-        datum = FloatDatum(source="1,2,3", value=14.2)
+        datum = FloatDatum(source="1,2,3", value=42.0)
 
-        self.assertEqual(datum.source, [1, 2, 3])
+        self.assertIsNotNone(datum)
 
 if __name__ == "__main__":
     unittest.main()

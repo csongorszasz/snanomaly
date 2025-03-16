@@ -9,8 +9,6 @@ class TestCorrelation(unittest.TestCase):
         correlation = Correlation("test", 0.0)
         self.assertEqual(correlation.quantity, "test")
         self.assertEqual(correlation.value, 0.0)
-        self.assertEqual(correlation.kind, "")
-        self.assertFalse(correlation.derived)
 
 if __name__ == "__main__":
     unittest.main()

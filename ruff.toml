@@ -22,6 +22,7 @@ lint.ignore = [
     "D400",
     "D401",
     "D415",
+    "DTZ007", # datetime timezone
     "EM101", # exception message literal
     "EM102", # exception message f-literal
     "FIX002", # fix TODOs
