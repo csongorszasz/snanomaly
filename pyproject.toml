@@ -16,6 +16,7 @@ dependencies = [
     "polars",
     "attrs",
     "cattrs",
+    "loguru",
 ]
 
 [project.optional-dependencies]

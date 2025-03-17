@@ -1,6 +1,7 @@
 from typing import Optional
 
 from attrs import define, field
+from attrs.converters import optional
 
 
 @define
@@ -12,7 +13,7 @@ class Observation:
     source: str = field()
     time: Optional[float | list] = field(
         default=None,
-        converter=lambda x: (float(x[0]) + float(x[1])) / 2 if isinstance(x, list) else float(x),
+        converter=optional(lambda x: (float(x[0]) + float(x[1])) / 2 if isinstance(x, list) else float(x)),
     )
     e_time: Optional[float] = field(default=None)
     e_lower_time: Optional[float] = field(default=None)

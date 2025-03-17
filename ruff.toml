@@ -5,6 +5,8 @@ lint.select = [
 ]
 lint.ignore = [
     #### specific rules
+    "ANN201", # missing return type
+    "ANN202", # missing return type
     "ANN204", # missing return type
     "B904", # nested exceptions
     "D100",   # ignore missing docs
@@ -26,6 +28,8 @@ lint.ignore = [
     "EM101", # exception message literal
     "EM102", # exception message f-literal
     "FIX002", # fix TODOs
+    "PIE790", # pass
+    "PLR2004", # magic numbers
     "UP007", # type annotations
     "TD002", # TODOs
     "TD003", # TODOs
