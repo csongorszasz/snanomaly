@@ -2,8 +2,8 @@ import json
 
 from attrs import define
 from cattrs import structure
-from loguru import logger
 
+from snanomaly import logger
 from snanomaly.models.dataset.dataset import Dataset
 from snanomaly.models.sncandidate.sncandidate import SNCandidate
 
