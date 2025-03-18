@@ -1,6 +1,6 @@
 from attrs import define
 
-from snanomaly.config import DATASETS_DIR
+from snanomaly import DATASETS_DIR
 from snanomaly.models.dataset.osc import OSC
 
 

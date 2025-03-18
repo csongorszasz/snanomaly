@@ -31,8 +31,10 @@ lint.ignore = [
     "EM102", # exception message f-literal
     "FIX002", # fix TODOs
     "PIE790", # pass
+    "PLR0913", # too many arguments
     "PLR2004", # magic numbers
     "UP007", # type annotations
+    "S101", # assert
     "TD002", # TODOs
     "TD003", # TODOs
     "TRY003", # long exception messages

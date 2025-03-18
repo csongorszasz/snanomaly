@@ -1,5 +1,6 @@
 import json
 
+import cattrs.errors
 from attrs import define
 from cattrs import structure
 
@@ -28,7 +29,7 @@ class OSC(Dataset):
                         continue
                     sn_candidate = structure(data, SNCandidate)
                     self.objects.append(sn_candidate)
-                except Exception as ex:
+                except (json.JSONDecodeError, ValueError, TypeError, cattrs.errors.ExceptionGroup) as ex:
                     logger.error(f"{i+1}. Error parsing file: `{file.name}`.")
                     logger.debug(f"Error: {ex}")
                     continue
