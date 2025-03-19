@@ -31,8 +31,7 @@ class OSC(Dataset):
                     self.objects.append(sn_candidate)
                 except (json.JSONDecodeError, ValueError, TypeError, cattrs.errors.ExceptionGroup) as ex:
                     logger.error(f"{i+1}. Error parsing file: `{file.name}`.")
-                    logger.debug(f"Error: {ex}")
-                    continue
+                    logger.exception(ex)
 
         logger.info(f"Loaded {len(self.objects)} objects.")
 

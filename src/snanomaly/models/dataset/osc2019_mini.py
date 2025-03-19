@@ -1,6 +1,6 @@
 from attrs import define
 
-from snanomaly import DATASETS_DIR
+from snanomaly import dirs
 from snanomaly.models.dataset.osc import OSC
 
 
@@ -11,7 +11,7 @@ class OSC2019Mini(OSC):
     """
 
     def __attrs_post_init__(self):
-        self.path = DATASETS_DIR / "osc2019_mini" if self.path is None else self.path
+        self.path = dirs.DATASETS / "osc2019_mini" if self.path is None else self.path
         self.name = "OSC-2019 Mini"
         self.description = (
             "The `Open Supernova Catalog` with data up to 2019. Contains a small subset of the "

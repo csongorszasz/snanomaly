@@ -9,8 +9,8 @@ class Source:
     Represents a source from where data was obtained.
     """
 
-    name: str = field()
     alias: int = field()
+    name: str = field(default=None)
     url: Optional[str] = field(default=None)
     bibcode: Optional[str] = field(default=None)
     doi: Optional[str] = field(default=None)
