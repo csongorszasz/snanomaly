@@ -4,6 +4,7 @@ from pathlib import Path
 
 from attrs import define, field
 from loguru import logger
+from tqdm import tqdm
 
 ### Predefined paths ###
 
@@ -20,6 +21,10 @@ class Directories:
     @property
     def LOGS(self) -> Path:
         return self.PROJECT / "logs"
+
+    @property
+    def LOGS_FILTERED(self) -> Path:
+        return self.LOGS / "filtered"
 
     def create_dirs(self) -> None:
         """Create all subdirectories."""
@@ -52,9 +57,9 @@ logger.add(
     serialize=True,
 )
 
-# Add custom handler for stdout that excludes exception logs
+# Add custom handler for stdout (redirect sys.stdout to tqdm.write()) that excludes exception log
 logger.add(
-    sys.stdout,
+    lambda msg: tqdm.write(msg, end=""),
     format="{time} | {level} | {module}:{function}:{line} - {message}",
     level=os.environ.get("LOG_LEVEL", "INFO"),
     filter=lambda record: record["exception"] is None,

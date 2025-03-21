@@ -13,6 +13,7 @@ class Dataset(ABC):
     path: Path = field(default=None)
     name: str = field(default=None, init=False)
     description: str = field(default=None, init=False)
+    size: int = field(default=None, init=False)
     objects: list = field(factory=list, init=False)
 
     @abstractmethod
@@ -21,3 +22,11 @@ class Dataset(ABC):
 
     def __attrs_post_init__(self):
         self._load_data()
+
+    def __str__(self):
+        return (f"{'#' * 30}\n"
+                f"Dataset: {self.name}\n"
+                f"Description: {self.description}\n"
+                f"Size: {self.size} objects\n"
+                f"Path: {self.path}\n"
+                f"{'#' * 30}")

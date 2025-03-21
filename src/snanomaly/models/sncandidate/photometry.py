@@ -1,7 +1,6 @@
 from typing import Optional
 
 from attrs import define, field
-from attrs.validators import instance_of
 
 from snanomaly.models.sncandidate.observation import Observation
 
@@ -17,7 +16,7 @@ class Photometry(Observation):
     e_lower_countrate: Optional[float] = field(default=None)
     e_upper_countrate: Optional[float] = field(default=None)
 
-    magnitude: float = field(default=None, validator=instance_of(float))
+    magnitude: float = field(default=None)
     e_magnitude: Optional[float] = field(default=None)
     e_lower_magnitude: Optional[float] = field(default=None)
     e_upper_magnitude: Optional[float] = field(default=None)

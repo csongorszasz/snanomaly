@@ -16,6 +16,7 @@ class OSC2019Mini(OSC):
         self.description = (
             "The `Open Supernova Catalog` with data up to 2019. Contains a small subset of the "
             "OSC-2019 dataset (<100 objects). Objects were selected from various catalogues to "
-            "ensure a diversity."
+            "ensure diversity."
         )
+        self.size = 70
         super().__attrs_post_init__()  # data loading happens in the parent class

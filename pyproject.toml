@@ -17,6 +17,7 @@ dependencies = [
     "attrs",
     "cattrs",
     "loguru",
+    "tqdm",
 ]
 
 [project.optional-dependencies]

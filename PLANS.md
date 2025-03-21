@@ -2,7 +2,7 @@
 
 - ~~understand how cattrs structure hooks work~~
 - ~~setup logging correctly~~ 
-- fix parsing issues that are fixable
+- ~~fix parsing issues that are fixable~~
 - validate objects for adherence to requirements before passing them on
   - has photometric data 
   - has observations with required filters
