@@ -8,7 +8,7 @@ from snanomaly.models.sncandidate.suggestion import Suggestion
 
 
 @define
-class Spectra(Observation):
+class SpectraObs(Observation):
     """
     Represents a spectra observation.
     """

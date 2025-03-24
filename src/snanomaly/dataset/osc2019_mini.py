@@ -1,7 +1,7 @@
 from attrs import define
 
 from snanomaly import dirs
-from snanomaly.models.dataset.osc import OSC
+from snanomaly.dataset.osc import OSC
 
 
 @define

@@ -6,7 +6,7 @@ from cattrs import structure
 from tqdm import tqdm
 
 from snanomaly import logger
-from snanomaly.models.dataset.dataset import Dataset
+from snanomaly.dataset.dataset import Dataset
 from snanomaly.models.sncandidate.sncandidate import SNCandidate
 
 

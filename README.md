@@ -13,8 +13,9 @@ Develop a pipeline that can most reliably detect anomalies in datasets of supern
   - run `pip install -e ".[dev]"` to install the package and its dependencies
 
 ## Main Package Directory (`src/snanomaly/`)
-- `load`: Data loading and preprocessing
+- `dataset`: Data loading
 - `models/`: Model classes
+- `preprocessing/`: Data preprocessing and feature extraction
 - `utils/`: Utility functions
 - `visualization/`: Data visualization tools
 - `scripts/`: Standalone scripts for development

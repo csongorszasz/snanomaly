@@ -4,7 +4,7 @@ from pathlib import Path
 from attrs import define, field
 
 
-@define()
+@define
 class Dataset(ABC):
     """
     Abstract base class for datasets (e.g.: OSC-2022).

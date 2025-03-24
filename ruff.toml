@@ -27,8 +27,10 @@ lint.ignore = [
     "D401",
     "D415",
     "DTZ007", # datetime timezone
+    "E741", # ambiguous variable name
     "EM101", # exception message literal
     "EM102", # exception message f-literal
+    "FBT003", # bool constant as function argument
     "FIX002", # fix TODOs
     "N802", # function name in lowercase
     "PERF401", # list extend
@@ -37,6 +39,7 @@ lint.ignore = [
     "PLR2004", # magic numbers
     "UP007", # type annotations
     "S101", # assert
+    "TC001", # type checking block
     "TD002", # TODOs
     "TD003", # TODOs
     "TRY003", # long exception messages

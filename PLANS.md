@@ -23,7 +23,7 @@
   - Gaussian Processes
   - Kernel Ridge Regression
   - Support Vector Machines
-  - Gradient Boosing Regression
+  - Gradient Boosting Regression
 - visualization of reconstructed lightcurves
 
 ### Dimensionality Reduction

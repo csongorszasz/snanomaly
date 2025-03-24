@@ -14,7 +14,7 @@ class Observation:
     time: Optional[float | list] = field(
         default=None,
         converter=optional(lambda x: (float(x[0]) + float(x[1])) / 2 if isinstance(x, list) else float(x)),
-    )
+    )  # TODO: check for presence, if not present -> skip
     e_time: Optional[float] = field(default=None)
     e_lower_time: Optional[float] = field(default=None)
     e_upper_time: Optional[float] = field(default=None)
@@ -26,7 +26,7 @@ class Observation:
     observer: Optional[str] = field(default=None)
     reducer: Optional[str] = field(default=None)
     airmass: Optional[float] = field(default=None)
-    host: Optional[bool] = field(default=None)
+    host: Optional[bool] = field(default=None)  # TODO: check for presence, if present -> skip
     includeshost: Optional[bool] = field(default=None)
-    model: Optional[str] = field(default=None)
-    realization: Optional[int] = field(default=None)
+    model: Optional[str] = field(default=None) # TODO: check for presence, if present -> skip
+    realization: Optional[int] = field(default=None) # TODO: check for presence, if present -> skip

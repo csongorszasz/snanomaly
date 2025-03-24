@@ -4,11 +4,11 @@ from snanomaly.models.sncandidate.alias import Alias
 from snanomaly.models.sncandidate.floatdatum import FloatDatum
 from snanomaly.models.sncandidate.photometry import Photometry
 from snanomaly.models.sncandidate.source import Source
-from snanomaly.models.sncandidate.spectra import Spectra
+from snanomaly.models.sncandidate.spectraobs import SpectraObs
 from snanomaly.models.sncandidate.stringdatum import StringDatum
 
 
-@define
+@define(repr=False)
 class SNCandidate:
     """
     Represents a supernova candidate.
@@ -46,8 +46,8 @@ class SNCandidate:
     hostdec: list[StringDatum] = field(factory=list)
     hostoffsetang: list[FloatDatum] = field(factory=list)
     hostoffsetdist: list[FloatDatum] = field(factory=list)
-    photometry: list[Photometry] = field(factory=list)
-    spectra: list[Spectra] = field(factory=list)
+    photometry: Photometry = field(factory=list, converter=None) # TODO
+    spectra: list[SpectraObs] = field(factory=list)
 
     def __repr__(self):
         return f"SNCandidate(name={self.name}, alias={self.alias})"
