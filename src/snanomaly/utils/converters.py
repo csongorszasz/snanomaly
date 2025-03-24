@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import attrs
 import numpy as np
 from cattrs import structure
 from loguru import logger
@@ -50,8 +49,8 @@ class PhotometryConverter:
     def _bands_from_raw_observations(cls, raw_observations: list[PhotometryObs]) -> Bands:
         bands = Bands()
         bands_lists: dict[str, dict[str, list]] = {}
-        band_attribs = attrs.fields_dict(Band).keys()
-        band_names = attrs.fields_dict(Bands).keys()
+        band_attribs = Band.get_public_field_names()
+        band_names = Bands.get_public_field_names()
 
         for obs in raw_observations:
             if cls.is_valid(obs):

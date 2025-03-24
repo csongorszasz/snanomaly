@@ -13,19 +13,13 @@ class MinimumObservationsPerBand(Check):
         if not data.photometry:
             return ValidationResult.invalid("No photometry data available", self.name)
 
-        # Group observations by band
-        bands = {}
-        for phot in data.photometry:
-            if phot.band not in bands:
-                bands[phot.band] = 0
-            bands[phot.band] += 1
-
-        # Check each band has minimum observations
-        for band, count in bands.items():
-            if count < self.min_observations:
-                return ValidationResult.invalid(
-                    f"Band [{band}] has only {count} observations (minimum: {self.min_observations})",
-                    self.name,
-                )
+        if data.photometry.bands.nr_observations >= self.min_observations * 3:  # 3 bands in a bandset (e.g.: BRI)
+            for band in data.photometry.bands.get_bands():
+                if 0 < band.nr_observations < self.min_observations:
+                    return ValidationResult.invalid(
+                        f"Band [{band.name}] has only {band.nr_observations} observation(s) "
+                        f"(minimum: {self.min_observations})",
+                        self.name,
+                    )
 
         return ValidationResult.valid(self.name)
