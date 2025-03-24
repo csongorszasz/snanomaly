@@ -3,6 +3,7 @@ from __future__ import annotations
 import attrs
 import numpy as np
 from cattrs import structure
+from loguru import logger
 
 from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import Bands
@@ -50,10 +51,14 @@ class PhotometryConverter:
         bands = Bands()
         bands_lists: dict[str, dict[str, list]] = {}
         band_attribs = attrs.fields_dict(Band).keys()
+        band_names = attrs.fields_dict(Bands).keys()
 
         for obs in raw_observations:
             if cls.is_valid(obs):
                 band_name = obs.band.replace("'", "_pr")
+                if band_name not in band_names:
+                    logger.debug(f"Skipping photometric observation: Unsupported band: {band_name}")
+                    continue
 
                 if band_name not in bands_lists:
                     bands_lists[band_name] = {}
@@ -74,4 +79,4 @@ class PhotometryConverter:
     def is_valid(cls, obs: PhotometryObs) -> bool:
         """TODO: Implement a more exhaustive check."""
         # Check if the observation is valid
-        return obs.time is None or obs.flux is None or obs.band is None
+        return obs.time is not None and obs.flux is not None and obs.band is not None
