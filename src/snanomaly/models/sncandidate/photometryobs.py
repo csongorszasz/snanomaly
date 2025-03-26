@@ -17,21 +17,21 @@ class PhotometryObs(Observation):
     """
 
     countrate: Optional[float] = field(default=None)
-    e_countrate: Optional[float] = field(default=None)
-    e_lower_countrate: Optional[float] = field(default=None)
-    e_upper_countrate: Optional[float] = field(default=None)
+    e_countrate: Optional[float] = field(default=np.nan)
+    e_lower_countrate: Optional[float] = field(default=np.nan)
+    e_upper_countrate: Optional[float] = field(default=np.nan)
 
     magnitude: Optional[float] = field(default=None)
     flux: Optional[float] = field(default=None)
-    e_flux: Optional[float] = field(default=None)  # TODO: set in post init
-    e_magnitude: Optional[float] = field(default=None)
-    e_lower_magnitude: Optional[float] = field(default=None)
-    e_upper_magnitude: Optional[float] = field(default=None)
+    e_flux: Optional[float] = field(default=np.nan)  # TODO: set in post init
+    e_magnitude: Optional[float] = field(default=np.nan)
+    e_lower_magnitude: Optional[float] = field(default=np.nan)
+    e_upper_magnitude: Optional[float] = field(default=np.nan)
     zeropoint: Optional[float] = field(default=None)
     band: Optional[str] = field(default=None) # TODO: check for presence, if not present -> skip
     bandset: Optional[str] = field(default=None) # TODO: check if `band` is in `bandset`, if not -> skip
     system: Optional[str] = field(default=None)
-    upperlimit: Optional[bool] = field(default=None)
+    upperlimit: Optional[bool] = field(default=False)
     upperlimitsigma: Optional[float] = field(default=None)
     kcorrected: Optional[bool] = field(default=None)
     scorrected: Optional[bool] = field(default=None)

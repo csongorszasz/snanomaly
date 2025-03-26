@@ -30,7 +30,9 @@ lint.ignore = [
     "E741", # ambiguous variable name
     "EM101", # exception message literal
     "EM102", # exception message f-literal
-    "FBT003", # bool constant as function argument
+    "FBT001", # bool function argument
+    "FBT002", # bool function argument
+    "FBT003", # bool function argument
     "FIX002", # fix TODOs
     "N802", # function name in lowercase
     "PERF401", # list extend

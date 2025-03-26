@@ -18,5 +18,5 @@ class OSC2019Mini(OSC):
             "OSC-2019 dataset (<100 objects). Objects were selected from various catalogues to "
             "ensure diversity."
         )
-        self.size = 70
+        self.size = 71
         super().__attrs_post_init__()  # data loading happens in the parent class

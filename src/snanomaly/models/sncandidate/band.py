@@ -9,12 +9,12 @@ class Band:
     Represents a band of photometry data.
     """
 
-    _name = field(init=False)
-    time: np.array = field(default=np.array([]))
-    e_time: np.array = field(default=np.array([]))
-    flux: np.array = field(default=np.array([]))
-    e_flux: np.array = field(default=np.array([]))
-    upperlimit: bool = field(default=False)
+    _name = field(default=None)
+    time: np.array = field(default=np.array([], dtype=np.float64))
+    e_time: np.array = field(default=np.array([], dtype=np.float64))
+    flux: np.array = field(default=np.array([], dtype=np.float64))
+    e_flux: np.array = field(default=np.array([], dtype=np.float64))
+    upperlimit: np.array = field(default=np.array([], dtype=bool))
 
     @property
     def matrix(self):
@@ -47,3 +47,10 @@ class Band:
         Returns a list of all public field names in the Band class.
         """
         return [field.name for field in attrs.fields(cls) if not field.name.startswith("_")]
+
+    def binned(self, bin_width: int, discrete_time: bool = True):
+        """
+        Returns a binned version of the band.
+        """
+        from snanomaly.preprocessing.binning import Binning
+        return Binning(self, bin_width, discrete_time)()
