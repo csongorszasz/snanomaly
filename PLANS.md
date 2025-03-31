@@ -11,6 +11,9 @@
   - minimum 3 photometric observations per band
   - etc. # TODO
 
+- band transformation
+- binned curve plotting
+
 - create unit tests for the models
 - create unit tests for parsing complex objects (.json)
 

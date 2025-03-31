@@ -57,6 +57,7 @@ class PhotometryObs(Observation):
             self.flux = self._flux_from_magnitude(self.magnitude, self.zeropoint)
         elif self.magnitude is None and self.flux is not None:
             self.magnitude = self._magnitude_from_flux(self.flux, self.zeropoint)
+        # TODO: finish the rest of the conversions (e.g.: e_flux)
 
     @staticmethod
     def _flux_from_magnitude(mag: float, zp: float) -> float:
