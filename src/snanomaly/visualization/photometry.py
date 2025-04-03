@@ -28,18 +28,19 @@ class Color(Enum):
 
 @define
 class PlotPhotometry:
-    title: str = field(factory=str)
     figure: go.Figure = field(factory=go.Figure)
 
     def __attrs_post_init__(self):
         # set axis labels
         self.figure.update_layout(
-            title={"text": self.title, "x": 0.5},
             xaxis={"exponentformat": "none"},
             yaxis={"exponentformat": "power", "showexponent": "all"},
         )
         self.figure.update_xaxes(title_text="MJD", minor={"showgrid": True, "ticks": "inside"})
         self.figure.update_yaxes(title_text="Flux", minor={"showgrid": True, "ticks": "inside"})
+
+    def set_title(self, title: str):
+        self.figure.update_layout(title={"text": title, "x": 0.5})
 
     def set_bands(self, bandsets: list[Bandset]):
         self._clear_figure()
