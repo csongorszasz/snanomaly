@@ -3,7 +3,7 @@ import numpy as np
 from attrs import define, field
 
 
-@define
+@define(repr=False)
 class Band:
     """
     Represents a band of photometry data.
@@ -54,3 +54,6 @@ class Band:
         """
         from snanomaly.preprocessing.binning import Binning
         return Binning(self, bin_width, discrete_time)()
+
+    def __repr__(self):
+        return f"Band({self.name}, {self.nr_observations} observations)"
