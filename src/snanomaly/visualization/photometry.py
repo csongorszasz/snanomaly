@@ -16,18 +16,19 @@ class Bandset:
 
 
 class Color(Enum):
-    B = "blue"
-    R = "red"
-    I = "pink"
-    g = "green"
-    r = "brown"
-    i = "yellow"
-    g_pr = "purple"
-    r_pr = "orange"
-    i_pr = "cyan"
+    B = "#1420c7"
+    R = "#fc0000"
+    I = "#ffaa00"
+    g = "#0ceb13"
+    r = "#f75e5e"
+    i = "#fccc6d"
+    g_pr = "#08730b"
+    r_pr = "#780101"
+    i_pr = "#754e00"
 
 @define
 class PlotPhotometry:
+    title: str = field(factory=str)
     figure: go.Figure = field(factory=go.Figure)
 
     def add_bands(self, bandsets: list[Bandset]):
@@ -49,9 +50,17 @@ class PlotPhotometry:
                     "visible": True,
                 },
                 name=band.name,
-                marker={"color": color},
             ),
         )
+
+        # set axis labels
+        self.figure.update_layout(
+            title={"text": self.title, "x": 0.5},
+            xaxis={"exponentformat": "none"},
+            yaxis={"exponentformat": "power", "showexponent": "all"},
+        )
+        self.figure.update_xaxes(title_text="MJD", minor={"showgrid": True, "ticks": "inside"})
+        self.figure.update_yaxes(title_text="Flux", minor={"showgrid": True, "ticks": "inside"})
 
     def _get_band_color(self, band: Band):
         try:
