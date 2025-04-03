@@ -31,17 +31,30 @@ class PlotPhotometry:
     title: str = field(factory=str)
     figure: go.Figure = field(factory=go.Figure)
 
-    def add_bands(self, bandsets: list[Bandset]):
+    def __attrs_post_init__(self):
+        # set axis labels
+        self.figure.update_layout(
+            title={"text": self.title, "x": 0.5},
+            xaxis={"exponentformat": "none"},
+            yaxis={"exponentformat": "power", "showexponent": "all"},
+        )
+        self.figure.update_xaxes(title_text="MJD", minor={"showgrid": True, "ticks": "inside"})
+        self.figure.update_yaxes(title_text="Flux", minor={"showgrid": True, "ticks": "inside"})
+
+    def set_bands(self, bandsets: list[Bandset]):
+        self._clear_figure()
         for bandset in bandsets:
             for band in bandset.band_references:
                 self._add_band_to_figure(band)
 
     def _add_band_to_figure(self, band: Band):
-        color = self._get_band_color(band)
+        # color = self._get_band_color(band)
 
         # Create a scatter plot for the band data
         self.figure.add_trace(
             go.Scatter(
+                mode="markers",
+                marker={"symbol": "circle", "line_width": 1, "size": 5},
                 x=band.time,
                 y=band.flux,
                 error_y={
@@ -53,14 +66,9 @@ class PlotPhotometry:
             ),
         )
 
-        # set axis labels
-        self.figure.update_layout(
-            title={"text": self.title, "x": 0.5},
-            xaxis={"exponentformat": "none"},
-            yaxis={"exponentformat": "power", "showexponent": "all"},
-        )
-        self.figure.update_xaxes(title_text="MJD", minor={"showgrid": True, "ticks": "inside"})
-        self.figure.update_yaxes(title_text="Flux", minor={"showgrid": True, "ticks": "inside"})
+    def _clear_figure(self):
+        # Clear all traces from the figure
+        self.figure.data = []
 
     def _get_band_color(self, band: Band):
         try:
