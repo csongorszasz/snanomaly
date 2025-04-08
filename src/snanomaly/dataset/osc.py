@@ -1,42 +1,57 @@
-import json
+from __future__ import annotations
 
-import cattrs.errors
+import json
+from collections.abc import Generator
+from pathlib import Path
+
+import cattrs
 from attrs import define
 from cattrs import structure
-from tqdm import tqdm
+from loguru import logger
 
-from snanomaly import logger
 from snanomaly.dataset.dataset import Dataset
+from snanomaly.dataset.exception import DatasetError, InvalidDataPointError, InvalidDataPointSchemaError
 from snanomaly.models.sncandidate.sncandidate import SNCandidate
 
 
 @define
 class OSC(Dataset):
     """
-    Represents the OSC-2019 dataset.
+    An implementation of the OSC (Open Supernova Catalog) dataset.
     """
 
-    def _load_data(self):
-        logger.info("Loading OSC dataset...")
-        files = self.path.glob("*.json")
+    def files(self) -> Generator[Path]:
+        yield from self.path.glob("*.json")
 
-        cnt_failed = 0
-        cnt_success = 0
-        for i, file in tqdm(enumerate(files), total=self.size):
-            logger.trace(f"Loading file: {file.name}")
-            with file.open() as f:
-                try:
-                    data = json.load(f).get(file.stem)
-                    if data is None:
-                        logger.warning(f"Warning: Invalid format for `{file.name}`. Skipping.")
-                        continue
-                    sn_candidate = structure(data, SNCandidate)
-                    self.objects.append(sn_candidate)
-                    cnt_success += 1
-                except (json.JSONDecodeError, ValueError, TypeError, cattrs.errors.ExceptionGroup) as ex:
-                    cnt_failed += 1
-                    logger.warning(f"Error parsing file nr. {i+1}: `{file.name}`.")
-                    logger.exception(ex)
+    def list_datapoints(self) -> None:
+        for file in self.files():
+            print(file.name)  # noqa: T201
 
-        logger.info(f"{cnt_failed} object(s) were omitted. Successfully loaded {cnt_success}/{self.size}.")
+    def load_dataset(self, batch_size: int) -> Generator[list]:
+        logger.debug(f"Loading OSC dataset at {self.path}")
 
+        data = []
+        for file in self.files():
+            try:
+                data.append(self.load_datapoint(file))
+                if len(data) == batch_size:
+                    yield data
+                    data = []
+            except DatasetError as ex:
+                logger.warning(f"Failed to load `{file}`: {ex}")
+
+        if data:  # yield any remaining data
+            yield data
+
+    def load_datapoint(self, file: Path) -> SNCandidate:
+        logger.debug(f"Loading data point at: {file}")
+        with file.open() as f:
+            event_name = file.stem
+            try:
+                datapoint = json.load(f).get(event_name)
+                if datapoint is None:
+                    raise InvalidDataPointSchemaError
+                return structure(datapoint, SNCandidate)
+            except (json.JSONDecodeError, ValueError, TypeError, cattrs.errors.ExceptionGroup) as ex:
+                logger.exception(ex)
+                raise InvalidDataPointError

@@ -10,6 +10,7 @@ lint.ignore = [
     "ANN204", # missing return type
     "ANN205", # missing return type
     "ANN206", # missing return type
+    "ANN401",
     "B904", # nested exceptions
     "D100",   # ignore missing docs
     "D101",
@@ -42,6 +43,7 @@ lint.ignore = [
     "UP007", # type annotations
     "S101", # assert
     "TC001", # type checking block
+    "TC003", # type checking block
     "TD002", # TODOs
     "TD003", # TODOs
     "TRY003", # long exception messages
