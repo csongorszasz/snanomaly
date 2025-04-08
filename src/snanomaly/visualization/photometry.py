@@ -36,8 +36,9 @@ class PlotPhotometry:
             xaxis={"exponentformat": "none"},
             yaxis={"exponentformat": "power", "showexponent": "all"},
         )
-        self.figure.update_xaxes(title_text="MJD", minor={"showgrid": True, "ticks": "inside"})
-        self.figure.update_yaxes(title_text="Flux", minor={"showgrid": True, "ticks": "inside"})
+        self.figure.update_xaxes(title_text="MJD (Modified Julian Date)", minor={"showgrid": True, "ticks": "inside"})
+        self.figure.update_yaxes(title_text=r"$Flux (\text{erg}\,\text{s}^{-1}\,\text{Hz}^{-1}\,\text{cm}^{-1})$", minor={"showgrid": True, "ticks": "inside"})
+        # self.figure.update_yaxes(title_text="Flux (erg s^(-1) Hz^(-1) cm^(-1))", minor={"showgrid": True, "ticks": "inside"})
 
     def set_title(self, title: str):
         self.figure.update_layout(title={"text": title, "x": 0.5})
@@ -77,7 +78,10 @@ class PlotPhotometry:
         except (KeyError, AttributeError):
             return "gray"
 
-    def show(self):
+    def show(self, width: int = 600, height: int = 600):
+        self.figure.update_layout(
+            width=width, height=height,
+        )
         self.figure.show()
 
 __all__ = ["Bandset", "PlotPhotometry"]
