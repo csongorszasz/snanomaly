@@ -100,6 +100,7 @@ class Binning:
 
         return Band(
             name=self.band.name,
+            is_binned=True,
             time=bin_centers,
             e_time=np.array(0.5 * self.bin_width),
             flux=np.array(binned_flux),

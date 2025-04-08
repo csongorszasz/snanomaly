@@ -15,6 +15,7 @@ class Band:
     flux: np.array = field(default=np.array([], dtype=np.float64))
     e_flux: np.array = field(default=np.array([], dtype=np.float64))
     upperlimit: np.array = field(default=np.array([], dtype=bool))
+    _is_binned = field(default=False)
 
     @property
     def matrix(self):
@@ -40,6 +41,14 @@ class Band:
         Sets the name of the band.
         """
         self._name = value
+
+    @property
+    def is_binned(self):
+        return self._is_binned
+
+    @is_binned.setter
+    def is_binned(self, value: bool):
+        self._is_binned = value
 
     @classmethod
     def get_public_field_names(cls):
