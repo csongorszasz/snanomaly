@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 import attrs
@@ -6,7 +7,7 @@ from attrs import define, field
 from snanomaly.models.sncandidate.band import Band
 
 
-class Bandsets:
+class Bandset(Enum):
     BRI = ("B", "R", "I")
     gri = ("g", "r", "i")
     gri_primed = ("g_pr", "r_pr", "i_pr")
@@ -31,12 +32,14 @@ class Bands:
     r_pr: Band = field(factory=Band)
     i_pr: Band = field(factory=Band)
 
-    def get_bands(self, bandset: Optional[list[str]] = None) -> list[Band]:
+    _available_bandsets: set[Bandset] = field(factory=set, init=False)
+
+    def get_bands(self, bandset: Optional[Bandset] = None) -> list[Band]:
         """
         Returns a list of all bands in the collection.
         """
         if bandset is not None:
-            return [getattr(self, band_name) for band_name in bandset]
+            return [getattr(self, band_name) for band_name in bandset.value]
         return [getattr(self, band_name) for band_name in self.get_public_field_names()]
 
     def __attrs_post_init__(self):
@@ -60,3 +63,10 @@ class Bands:
         Returns a list of all public field names in the Bands class.
         """
         return [field.name for field in attrs.fields(cls) if not field.name.startswith("_")]
+
+    @property
+    def available_bandsets(self) -> set[Bandset]:
+        return self._available_bandsets
+
+    def add_to_available_bandsets(self, bandset: Bandset):
+        self._available_bandsets.add(bandset)

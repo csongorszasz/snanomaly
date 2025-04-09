@@ -25,6 +25,10 @@ class Directories:
     def LOGS_FILTERED(self) -> Path:
         return self.LOGS / "filtered"
 
+    @property
+    def OUTPUTS(self) -> Path:
+        return self.PROJECT / "outputs"
+
     def create_dirs(self) -> None:
         """Create all subdirectories."""
         # Get all property methods that represent directories (except PROJECT)

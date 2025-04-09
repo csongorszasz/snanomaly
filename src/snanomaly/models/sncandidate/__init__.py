@@ -1,1 +1,1 @@
-from snanomaly.models.sncandidate.bands import Bandsets
+from snanomaly.models.sncandidate.bands import Bandset
