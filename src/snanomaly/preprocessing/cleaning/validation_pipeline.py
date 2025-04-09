@@ -55,15 +55,15 @@ class ValidationPipeline:
             print(f"### {self.subject_name} ###")
             print("Passed.")
 
-    def is_valid(self, data: SNCandidate) -> bool:
+    def is_valid(self, data: SNCandidate) -> tuple[bool, SNCandidate]:
         """Return True if all checks pass."""
-        return all(result.is_valid for result in self.validate(data))
+        return all(result.is_valid for result in self.validate(data)), data
 
     def filter_valid(self, candidates: Generator[list]) -> Generator[list]:
         """Filter a collection of candidates to only those that pass all checks."""
         for batch in candidates:
             batch_size = len(batch)
             with multiprocessing.Pool(batch_size) as p:
-                valid_flags = p.map(self.is_valid, batch)
-            valid_candidates = [cand for cand, is_valid in zip(batch, valid_flags, strict=False) if is_valid]
+                results = p.map(self.is_valid, batch)
+            valid_candidates = [cand for is_valid, cand in results if is_valid]
             yield valid_candidates
