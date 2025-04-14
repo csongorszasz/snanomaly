@@ -18,6 +18,7 @@ dependencies = [
     "cattrs",
     "loguru",
     "tqdm",
+    "gp-multistate-kernel",
 ]
 
 [project.optional-dependencies]

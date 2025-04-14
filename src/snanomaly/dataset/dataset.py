@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from attrs import define, field
 
@@ -28,7 +28,7 @@ class Dataset(ABC):
         pass
 
     @abstractmethod
-    def load_datapoint(self, file: Path) -> Any:
+    def load_datapoint(self, path: Optional[Path] = None, name: Optional[str] = None) -> Any:
         pass
 
     def __str__(self):

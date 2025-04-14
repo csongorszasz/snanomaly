@@ -6,3 +6,6 @@ class InvalidDataPointSchemaError(DatasetError):
 
 class InvalidDataPointError(DatasetError):
     pass
+
+class DataPointNotFoundError(DatasetError):
+    pass

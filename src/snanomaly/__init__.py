@@ -29,6 +29,22 @@ class Directories:
     def OUTPUTS(self) -> Path:
         return self.PROJECT / "outputs"
 
+    @property
+    def VALIDATED(self) -> Path:
+        return self.OUTPUTS / "validated"
+
+    @property
+    def INTERPOLATED(self) -> Path:
+        return self.OUTPUTS / "interpolated"
+
+    @property
+    def DIMREDUCED(self) -> Path:
+        return self.OUTPUTS / "dimreduced"
+
+    @property
+    def ANOMALIES(self) -> Path:
+        return self.OUTPUTS / "anomalies"
+
     def create_dirs(self) -> None:
         """Create all subdirectories."""
         # Get all property methods that represent directories (except PROJECT)
