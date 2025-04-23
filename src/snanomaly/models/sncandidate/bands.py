@@ -12,6 +12,24 @@ class Bandset(Enum):
     gri = ("g", "r", "i")
     gri_primed = ("g_pr", "r_pr", "i_pr")
 
+    def __repr__(self):
+        return str(self.value)
+
+
+class BandEnum(Enum):
+    B = "B"
+    R = "R"
+    I = "I"
+    g = "g"
+    r = "r"
+    i = "i"
+    g_pr = "g_pr"
+    r_pr = "r_pr"
+    i_pr = "i_pr"
+
+    def __repr__(self):
+        return str(self.value)
+
 
 @define
 class Bands:

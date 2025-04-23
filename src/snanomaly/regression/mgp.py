@@ -10,9 +10,10 @@ from scipy import optimize
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Kernel
 
+from snanomaly.models.results.mgp_result import MGPResult
 from snanomaly.models.sncandidate import Bandset
 from snanomaly.models.sncandidate.band import Band
-from snanomaly.models.sncandidate.bands import Bands
+from snanomaly.models.sncandidate.bands import BandEnum, Bands
 
 
 class Optimizer(Enum):
@@ -27,7 +28,9 @@ class PreparedData:
     X: np.ndarray = field(init=False)
     y: np.array = field(init=False)
     err: np.array = field(init=False)
-    norm_factor: np.float64 = field(init=False)
+    # norm_factor: np.float64 = field(init=False)
+    norm_y_mean: np.float64 = field(init=False)
+    norm_y_std: np.float64 = field(init=False)
 
     def __attrs_post_init__(self):
         self.bands = [band.binned(bin_width=1) if not band.is_binned else band for band in self.bands]
@@ -35,16 +38,41 @@ class PreparedData:
             [np.column_stack((i * np.ones(band.nr_observations), band.time)) for i, band in enumerate(self.bands)],
         )
         self.y = np.concatenate([band.flux for band in self.bands])
-        self.norm_factor = self.y.std()
-        self.y = self.y / self.norm_factor
-        self.err = np.concatenate([band.e_flux for band in self.bands]) / self.norm_factor
+        self.err = np.concatenate([band.e_flux for band in self.bands])
+        # self.norm_factor = self.y.std()
+        # self.norm_factor = 1 # TODO
+        self.standardize()
+
+    def standardize(self):
+        """
+        Standardizes the data by subtracting the mean and dividing by the standard deviation.
+        """
+        # self.norm_y_mean = 0
+        # self.norm_y_mean = np.mean(self.y)
+        # self.norm_y_std = np.std(self.y)
+        # self.y = (self.y - self.norm_y_mean) / self.norm_y_std
+        # self.err = (self.err - np.mean(self.err)) / np.std(self.err)
+
+        # self.norm_y_std = np.std(self.y) or self.y[0] or 1
+        self.norm_y_std = np.max(self.y)
+        self.y /= self.norm_y_std
+        self.err /= self.norm_y_std
+
+    def destandardize(self, y: np.ndarray) -> np.ndarray:
+        """
+        Reverses the standardization process.
+        """
+        # return y * self.norm_y_std + self.norm_y_mean
+        return y * self.norm_y_std
 
 @define
 class MGPInterpolator:
     """Interpolate light curves in available band sets with Multivariate Gaussian Process Regression."""
 
+    sn_name: str = field()
     bandset: Bandset = field()
     bands: Bands = field()
+    peak_band: BandEnum = field()
     normalize_y: bool = field()
     n_restarts_optimizer: int = field()
     kernel: Kernel = field(default=RBF)
@@ -63,11 +91,11 @@ class MGPInterpolator:
         kernels = self._init_kernels()
         scale, scale_bounds = self._init_scale_matrix()
         ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
-        alpha = self._init_alpha()
+        # alpha = self._init_alpha() # TODO
         optimizer = self._init_optimizer()
         return GaussianProcessRegressor(
             kernel=ms_kernel,
-            alpha=alpha,
+            # alpha=alpha, # TODO
             optimizer=optimizer,
             n_restarts_optimizer=self.n_restarts_optimizer,
             normalize_y=self.normalize_y,
@@ -126,9 +154,22 @@ class MGPInterpolator:
         )
         return res.x, res.fun
 
-    # def predict(self, time_lower_bound: int, time_upper_bound: int):
-    #     time_new = np.linspace(np.min(prepped_bands[0].time), np.max(prepped_bands[0].time), 100)
-    #     X_new_all = np.concatenate([np.vstack((i * np.ones(len(time_new)), time_new)).T for i in range(3)])
-    #     y_pred_all, y_std_all = gp.predict(X_new_all, return_std=True)
-    #     y_pred_all = y_pred_all.reshape(3, len(time_new)).T
-    #     y_std_all = y_std_all.reshape(3, len(time_new)).T
+    def predict(self, days_pre_peak: int, days_post_peak: int) -> MGPResult:
+        # time_new = np.linspace(np.min(prepped_bands[0].time), np.max(prepped_bands[0].time), 100)
+        time_new = np.linspace() # TODO get peak day
+        X_new_all = np.concatenate([np.vstack((i * np.ones(len(time_new)), time_new)).T for i in range(3)])
+        y_mean_all, y_std_all = self.regressor.predict(X_new_all, return_std=True)
+        y_mean_all = y_mean_all.reshape(len(self.bandset.value), len(time_new))
+        y_std_all = y_std_all.reshape(len(self.bandset.value), len(time_new))
+        return MGPResult(
+            sn_name=self.sn_name,
+            bandset=self.bandset,
+            days_pre_peak=days_pre_peak,
+            days_post_peak=days_post_peak,
+            derivs=None, # TODO
+            weight_derivs=None, # TODO
+            log_likelihood=self.regressor.log_marginal_likelihood(),
+            thetas=self.regressor.kernel_.theta,
+            pred_means={band_name: y_mean_all[i, :] for i, band_name in enumerate(self.bandset.value)},
+            pred_stds={band_name: y_std_all[i, :] for i, band_name in enumerate(self.bandset.value)},
+        )
