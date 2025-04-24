@@ -14,6 +14,7 @@ from snanomaly.models.results.mgp_result import MGPResult
 from snanomaly.models.sncandidate import Bandset
 from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import BandEnum, Bands
+from snanomaly.regression.exception import BandNotFoundError
 
 
 class Optimizer(Enum):
@@ -54,7 +55,8 @@ class PreparedData:
         # self.err = (self.err - np.mean(self.err)) / np.std(self.err)
 
         # self.norm_y_std = np.std(self.y) or self.y[0] or 1
-        self.norm_y_std = np.max(self.y)
+        # self.norm_y_std = np.max(self.y)
+        self.norm_y_std = 1
         self.y /= self.norm_y_std
         self.err /= self.norm_y_std
 
@@ -79,6 +81,7 @@ class MGPInterpolator:
     length_scale_min_bounds: tuple[float, float] = field(default=(0, np.inf))
     optimize_method: Optimizer = field(default=Optimizer.L_BFGS_B)
     random_state: int = field(default=None)
+    peak_time: float = field(init=False)
     regressor: GaussianProcessRegressor = field(init=False)
     prepared_bands: PreparedData = field(init=False)
 
@@ -86,6 +89,7 @@ class MGPInterpolator:
         self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset))
         self.regressor = self._init_regressor()
         self.regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
+        self.peak_time = self._init_peak_time()
 
     def _init_regressor(self) -> GaussianProcessRegressor:
         kernels = self._init_kernels()
@@ -154,20 +158,40 @@ class MGPInterpolator:
         )
         return res.x, res.fun
 
+    def _init_peak_time(self) -> float:
+        band = filter(lambda band: band.name == self.peak_band.value, self.prepared_bands.bands)
+        try:
+            band = next(band)
+            return band.time[np.argmax(band.flux)]
+        except StopIteration:
+            raise BandNotFoundError(f"Peak band `{self.peak_band}` not found in bandset `{self.bandset}`")
+
     def predict(self, days_pre_peak: int, days_post_peak: int) -> MGPResult:
-        # time_new = np.linspace(np.min(prepped_bands[0].time), np.max(prepped_bands[0].time), 100)
-        time_new = np.linspace() # TODO get peak day
-        X_new_all = np.concatenate([np.vstack((i * np.ones(len(time_new)), time_new)).T for i in range(3)])
+        # TODO: handle negative predicted mean values
+        # TODO: standardization
+
+        range_width = days_post_peak + days_pre_peak
+        nr_bands = len(self.bandset.value)
+        time_new = np.linspace(self.peak_time - 2*range_width, self.peak_time + 2*range_width, 4*range_width+1)
+
+        # predict on extended interval
+        X_new_all = np.concatenate([np.column_stack((i * np.ones(len(time_new)), time_new)) for i in range(nr_bands)])
         y_mean_all, y_std_all = self.regressor.predict(X_new_all, return_std=True)
-        y_mean_all = y_mean_all.reshape(len(self.bandset.value), len(time_new))
-        y_std_all = y_std_all.reshape(len(self.bandset.value), len(time_new))
+
+        # only keep values inside the original target interval
+        mask = (X_new_all[:, 1] >= self.peak_time - days_pre_peak) & (X_new_all[:, 1] <= self.peak_time + days_post_peak)
+        y_mean_all = y_mean_all[mask]
+        y_std_all = y_std_all[mask]
+
+        # reorganize to one row per band
+        y_mean_all = y_mean_all.reshape(nr_bands, range_width+1)
+        y_std_all = y_std_all.reshape(nr_bands, range_width+1)
+
         return MGPResult(
             sn_name=self.sn_name,
             bandset=self.bandset,
             days_pre_peak=days_pre_peak,
             days_post_peak=days_post_peak,
-            derivs=None, # TODO
-            weight_derivs=None, # TODO
             log_likelihood=self.regressor.log_marginal_likelihood(),
             thetas=self.regressor.kernel_.theta,
             pred_means={band_name: y_mean_all[i, :] for i, band_name in enumerate(self.bandset.value)},

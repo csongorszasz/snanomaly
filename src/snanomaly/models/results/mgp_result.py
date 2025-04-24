@@ -18,8 +18,6 @@ class MGPResult:
     bandset: Bandset = field()
     days_pre_peak: int = field()
     days_post_peak: int = field()
-    derivs: list[float] = field()
-    weight_derivs: list[float] = field()
     log_likelihood: float = field()
     thetas: list[float] = field()
     pred_means: dict = field()
@@ -36,8 +34,6 @@ def write():
     print("Writing")
     res = MGPResult("a",
                     Bandset.gri, 20, 100,
-                    [1.2, 3.2, 1.1],
-                    [1.0, 1.0, 1.0],
                     -1.234,
                     [0.2, 0.5, 4.5],
                     {"g": [1.0, 2.0, 3.0], "r": [0.2, 1., 2.], "i": [1.,2.,3.]},
@@ -53,4 +49,4 @@ def read():
     print(lf.collect(streaming=True))
 
 # write()
-read()
+# read()
