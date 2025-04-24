@@ -42,7 +42,7 @@ class PreparedData:
         self.err = np.concatenate([band.e_flux for band in self.bands])
         # self.norm_factor = self.y.std()
         # self.norm_factor = 1 # TODO
-        self.standardize()
+        # self.standardize() # TODO
 
     def standardize(self):
         """
@@ -197,3 +197,6 @@ class MGPInterpolator:
             pred_means={band_name: y_mean_all[i, :] for i, band_name in enumerate(self.bandset.value)},
             pred_stds={band_name: y_std_all[i, :] for i, band_name in enumerate(self.bandset.value)},
         )
+
+    def get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
+        return np.linspace(self.peak_time - days_pre, self.peak_time + days_post, days_pre + days_post + 1)

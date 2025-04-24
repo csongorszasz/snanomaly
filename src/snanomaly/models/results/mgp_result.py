@@ -23,12 +23,12 @@ class MGPResult:
     pred_means: dict = field()
     pred_stds: dict = field()
 
-    def lazyframe(self) -> pl.LazyFrame:
-        """Converting to Polars datatype with only one row being created."""
+    def to_dataframe(self) -> pl.DataFrame:
+        """Converting to Polars DataFrame with only one row being created."""
         data: dict = {}
         for key, value in cattrs.unstructure(self).items():
             data[key] = [value]
-        return pl.LazyFrame(data)
+        return pl.DataFrame(data)
 
 def write():
     print("Writing")
@@ -39,9 +39,9 @@ def write():
                     {"g": [1.0, 2.0, 3.0], "r": [0.2, 1., 2.], "i": [1.,2.,3.]},
                     {"g": [0.2, 0.1, 0.15], "r": [0.2, 1., 2.], "i": [1.,0.11,0.04]},
                     )
-    lf = res.lazyframe()
-    lf.sink_parquet(path="test.parquet")
-    print(lf.collect())
+    df = res.to_dataframe()
+    df.write_parquet("test.parquet")
+    print(df)
 
 def read():
     print("Reading")
