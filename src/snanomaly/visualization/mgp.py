@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import numpy as np
 import plotly.graph_objects as go
 from attrs import define, field
@@ -24,17 +26,12 @@ class PlotMGP:
     def set_title(self, title: str):
         self.figure.update_layout(title={"text": title, "x": 0.5})
 
-    def set_all_bands(self):
+    def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()
-        for band in self.interpolator.prepared_bands.bands:
+        for band in self.interpolator.bands.get_bands(self.interpolator.bandset):
+            if bands and BandEnum[band.name] not in bands:
+                continue
             self._add_band_to_figure(band)
-
-    def set_bands(self, bands: list[BandEnum]):
-        # TODO
-        self._clear_figure()
-        # for band in self.mgp_result:
-        #     self._add_band_to_figure(band)
-        raise NotImplementedError
 
     def _add_band_to_figure(self, band: Band):
         color = self._get_band_color(band)
@@ -50,7 +47,7 @@ class PlotMGP:
         # interpolation
         y_mean = self.mgp_result.pred_means.get(band.name)
         y_std = self.mgp_result.pred_stds.get(band.name)
-        pred_x = self.interpolator._get_interval_relative_to_peak(20, 100)
+        pred_x = self.interpolator.get_interval_relative_to_peak(20, 100)
         self.figure.add_trace(go.Scatter(
             x=pred_x,
             y=y_mean,
@@ -59,7 +56,6 @@ class PlotMGP:
             line={"color": color},
         ))
         # uncertainty (creating a closed polygon shape for the confidence interval bands)
-        # std_fillcolors = name_to_rgb(band_colors[band.name])
         self.figure.add_trace(go.Scatter(
             x=np.concatenate([pred_x, pred_x[::-1]]),
             y=np.concatenate([
@@ -67,7 +63,6 @@ class PlotMGP:
                 (y_mean - y_std)[::-1],
             ]),
             fill="toself", # complete path is required
-            # fillcolor=f"rgba({std_fillcolors.red}, {std_fillcolors.green}, {std_fillcolors.blue}, 0.2)",
             fillcolor="rgba(0, 0, 0, 0.2)",
             line={"color": "rgba(255, 255, 255, 0)"},
             showlegend=False,

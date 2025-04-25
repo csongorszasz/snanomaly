@@ -4,9 +4,9 @@ from enum import Enum
 
 
 class Color(Enum):
-    B = "green"
-    R = "red"
-    I = "brown"
+    B = "blue"
+    R = "magenta"
+    I = "goldenrod"
     g = "green"
     r = "red"
     i = "brown"

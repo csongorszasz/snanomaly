@@ -182,8 +182,6 @@ class MGPInterpolator:
         return y
 
     def predict_from_peak(self, prediction_interval_from_peak: tuple[int, int]) -> MGPResult:
-        # TODO: handle negative predicted mean values
-
         if self.peak_time is None:
             raise PeakTimeNotSetError("Set time of peak brightness before making predictions")
 
@@ -212,7 +210,7 @@ class MGPInterpolator:
             pred_stds={band_name: y_stds[i, :] for i, band_name in enumerate(self.bandset.value)},
         )
 
-    def _get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
+    def get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
         return np.linspace(self.peak_time - days_pre, self.peak_time + days_post, days_pre + days_post + 1)
 
     def _y_negative_to_zero_until_infinity(self, peak_idx: int, y_means: np.ndarray, y_stds: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
