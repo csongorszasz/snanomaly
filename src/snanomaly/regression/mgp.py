@@ -194,11 +194,12 @@ class MGPInterpolator:
         days_pre_peak, days_post_peak = -prediction_interval_from_peak[0], prediction_interval_from_peak[1]
         range_width = days_pre_peak + days_post_peak
 
+        # predict
         y_means, y_stds = self._predict_explicit(self.peak_time - days_pre_peak, self.peak_time + days_post_peak, return_std=True)
-        # handle negative values
-        # y_means, y_stds = self.y_negative_to_zero_until_infinity(y_means, y_stds)
         # reorganize to one row per band
         y_means, y_stds = y_means.reshape(self.nr_bands, range_width+1), y_stds.reshape(self.nr_bands, range_width+1)
+        # handle negative values
+        y_means, y_stds = self._y_negative_to_zero_until_infinity(days_pre_peak, y_means, y_stds)
 
         return MGPResult(
             sn_name=self.sn_name,
@@ -211,29 +212,34 @@ class MGPInterpolator:
             pred_stds={band_name: y_stds[i, :] for i, band_name in enumerate(self.bandset.value)},
         )
 
-    def get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
+    def _get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
         return np.linspace(self.peak_time - days_pre, self.peak_time + days_post, days_pre + days_post + 1)
 
-    def y_negative_to_zero_until_infinity(self, y_means: np.array, y_stds: np.array) -> tuple[np.array, np.array]:
-        # TODO
+    def _y_negative_to_zero_until_infinity(self, peak_idx: int, y_means: np.ndarray, y_stds: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
-        Relative to the peak point finds the two closest points (1 to the left, 1 to the right) that are negative or
-        zero and zeroes all subsequents values until infinity.
+        Relative to the peak point, finds the two closest points (1 to the left, 1 to the right) that are zero or
+        negative and zeroes all subsequents values until infinity.
         """
-        # find the first negative value
-        first_neg_idx = np.where(y_means < 0)[0]
-        if len(first_neg_idx) == 0:
-            return y_means, y_stds
-        first_neg_idx = first_neg_idx[0]
+        # Process each band
+        for i in range(self.nr_bands):
+            # Find first negative or zero value to the left of peak
+            for j in range(peak_idx-1, -1, -1):
+                if y_means[i, j] <= 0:
+                    # Zero out all values to the left including this point
+                    y_means[i, :j+1] = 0
+                    y_stds[i, :j+1] = 0
+                    break
 
-        # find the last negative value
-        last_neg_idx = np.where(y_means < 0)[0][-1]
-
-        # zero out all values after the last negative value
-        y_means[last_neg_idx:] = 0
-        y_stds[last_neg_idx:] = 0
+            # Find first negative or zero value to the right of peak
+            for j in range(peak_idx + 1, len(y_means[i])):
+                if y_means[i, j] <= 0:
+                    # Zero out all values to the right including this point
+                    y_means[i, j:] = 0
+                    y_stds[i, j:] = 0
+                    break
 
         return y_means, y_stds
+
 
     @property
     def nr_bands(self):
