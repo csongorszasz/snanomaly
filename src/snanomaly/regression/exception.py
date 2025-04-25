@@ -9,3 +9,6 @@ class PredictionIntervalOutOfBoundsError(RegressionError):
 
 class PeakTimeNotSetError(RegressionError):
     pass
+
+class CouldNotConvergeError(RegressionError):
+    pass

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import warnings
 from collections.abc import Callable
 from enum import Enum
 
 import numpy as np
 from attrs import define, field
+from loguru import logger
 from multistate_kernel import MultiStateKernel
 from scipy import optimize
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Kernel
 
@@ -14,7 +17,11 @@ from snanomaly.models.results.mgp_result import MGPResult
 from snanomaly.models.sncandidate import Bandset
 from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import BandEnum, Bands
-from snanomaly.regression.exception import BandNotFoundError, PeakTimeNotSetError, PredictionIntervalOutOfBoundsError
+from snanomaly.regression.exception import (
+    BandNotFoundError,
+    PeakTimeNotSetError,
+    PredictionIntervalOutOfBoundsError,
+)
 
 
 class Optimizer(Enum):
@@ -37,7 +44,18 @@ class PreparedData:
         self.y: np.array = np.concatenate([band.flux for band in self.bands])
         self.err: np.array = np.concatenate([band.e_flux for band in self.bands])
 
+        # self.norm_factor = (self.y.mean(), self.y.std())
+        self.norm_factor = (0, self.y.max())
+
+        self.y = self.normalize(self.y)
+
         self._keep_interval_relative_to_peak(peak_band, prediction_interval_from_peak)
+
+    def normalize(self, y: np.array) -> np.array:
+        return (y - self.norm_factor[0]) / self.norm_factor[1]
+
+    def denormalize(self, y: np.array) -> np.array:
+        return y * self.norm_factor[1] + self.norm_factor[0]
 
     @property
     def bandset(self) -> str:
@@ -90,32 +108,53 @@ class MGPInterpolator:
         self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset), self.peak_band,
                                            self.prediction_interval_from_peak)
         self.regressor = self._init_regressor()
-        self.regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
         self.peak_time = self._find_peak_time_in_predicted_data()
 
     def _init_regressor(self) -> GaussianProcessRegressor:
-        kernels = self._init_kernels()
-        scale, scale_bounds = self._init_scale_matrix()
-        ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
-        # alpha = self._init_alpha() # TODO
-        optimizer = self._init_optimizer()
-        return GaussianProcessRegressor(
-            kernel=ms_kernel,
-            # alpha=alpha, # TODO
-            optimizer=optimizer,
-            n_restarts_optimizer=self.n_restarts_optimizer,
-            normalize_y=self.normalize_y,
-            random_state=self.random_state,
-        )
+        def construct_regressor(kernel_min_bound_offset: float) -> GaussianProcessRegressor:
+            kernels = self._init_kernels(kernel_min_bound_offset)
+            scale, scale_bounds = self._init_scale_matrix()
+            ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
+            # alpha = self._init_alpha() # TODO
+            optimizer = self._init_optimizer()
+            return GaussianProcessRegressor(
+                kernel=ms_kernel,
+                # alpha=alpha, # TODO
+                optimizer=optimizer,
+                n_restarts_optimizer=self.n_restarts_optimizer,
+                # normalize_y=self.normalize_y, # TODO
+                normalize_y=False, # TODO
+                random_state=self.random_state,
+            )
 
-    def _init_kernels(self) -> tuple[Kernel]:
+        def search_optimal_min_length_scale(offset_low: float):
+            """Find optimal lower bound for kernel length-scale through trial and error."""
+            kernel_min_bound_offset = offset_low
+            step = 0.1
+            while True:
+                regressor = construct_regressor(kernel_min_bound_offset)
+                try:
+                    with warnings.catch_warnings():
+                        # Treat ConvergenceWarning as an error
+                        warnings.filterwarnings("error", category=ConvergenceWarning)
+                        regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
+                    return regressor
+                except ConvergenceWarning as ex:
+                    logger.debug(f"! ConvergenceWarning during MGP fit: {ex}")
+                    kernel_min_bound_offset -= step
+                    logger.debug(f"Retrying with kernel length-scale lower bound offset = {kernel_min_bound_offset:.2f}")
+                    continue
+
+        return search_optimal_min_length_scale(0.0)
+
+    def _init_kernels(self, min_bound_offset: float = 0.0) -> tuple[Kernel]:
         time_diffs = (
             np.max(np.diff(band.time)) if band.nr_observations > 1 else 0 for band in self.bands.get_bands(self.bandset)
         )
         min_bounds = [
             max(self.length_scale_min_bounds[0], min(diff, self.length_scale_min_bounds[1])) for diff in time_diffs
         ]
-        return tuple(self.kernel(length_scale_bounds=(min_bounds, 1e4)) for min_bounds in min_bounds)
+        return tuple(self.kernel(length_scale_bounds=(max(0.01, min_bound + min_bound_offset), 1e4)) for min_bound in min_bounds)
 
     def _init_scale_matrix(self) -> tuple[np.ndarray, tuple(np.ndarray, np.ndarray)]:
         """
@@ -194,6 +233,8 @@ class MGPInterpolator:
 
         # predict
         y_means, y_stds = self._predict_explicit(self.peak_time - days_pre_peak, self.peak_time + days_post_peak, return_std=True)
+        # denormalize
+        y_means, y_stds = self.prepared_bands.denormalize(y_means), self.prepared_bands.denormalize(y_stds)
         # reorganize to one row per band
         y_means, y_stds = y_means.reshape(self.nr_bands, range_width+1), y_stds.reshape(self.nr_bands, range_width+1)
         # handle negative values
