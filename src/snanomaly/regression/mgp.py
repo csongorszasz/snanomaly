@@ -14,58 +14,58 @@ from snanomaly.models.results.mgp_result import MGPResult
 from snanomaly.models.sncandidate import Bandset
 from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import BandEnum, Bands
-from snanomaly.regression.exception import BandNotFoundError
+from snanomaly.regression.exception import BandNotFoundError, PeakTimeNotSetError, PredictionIntervalOutOfBoundsError
 
 
 class Optimizer(Enum):
     L_BFGS_B = "fmin_l_bfgs_b"
     TRUST_CONSTR = "trust-constr"
 
-@define
 class PreparedData:
-    """Represents the data format required by a MultiStateKernel."""
+    """
+    Represents the data format required by a MultiStateKernel.
 
-    bands: list[Band] = field()
-    X: np.ndarray = field(init=False)
-    y: np.array = field(init=False)
-    err: np.array = field(init=False)
-    # norm_factor: np.float64 = field(init=False)
-    norm_y_mean: np.float64 = field(init=False)
-    norm_y_std: np.float64 = field(init=False)
+    Although the actual peak point might not be available in the train data, find the peak from what is available
+    and do the preprocessing relative to that approximate peak.
+    """
 
-    def __attrs_post_init__(self):
-        self.bands = [band.binned(bin_width=1) if not band.is_binned else band for band in self.bands]
-        self.X = np.concatenate(
+    def __init__(self, bands: list[Band], peak_band: BandEnum, prediction_interval_from_peak: tuple[int, int]):
+        self.bands: list[Band] = self._init_bands(bands)
+        self.X: np.ndarray = np.concatenate(
             [np.column_stack((i * np.ones(band.nr_observations), band.time)) for i, band in enumerate(self.bands)],
         )
-        self.y = np.concatenate([band.flux for band in self.bands])
-        self.err = np.concatenate([band.e_flux for band in self.bands])
-        # self.norm_factor = self.y.std()
-        # self.norm_factor = 1 # TODO
-        # self.standardize() # TODO
+        self.y: np.array = np.concatenate([band.flux for band in self.bands])
+        self.err: np.array = np.concatenate([band.e_flux for band in self.bands])
 
-    def standardize(self):
-        """
-        Standardizes the data by subtracting the mean and dividing by the standard deviation.
-        """
-        # self.norm_y_mean = 0
-        # self.norm_y_mean = np.mean(self.y)
-        # self.norm_y_std = np.std(self.y)
-        # self.y = (self.y - self.norm_y_mean) / self.norm_y_std
-        # self.err = (self.err - np.mean(self.err)) / np.std(self.err)
+        self._keep_interval_relative_to_peak(peak_band, prediction_interval_from_peak)
 
-        # self.norm_y_std = np.std(self.y) or self.y[0] or 1
-        # self.norm_y_std = np.max(self.y)
-        self.norm_y_std = 1
-        self.y /= self.norm_y_std
-        self.err /= self.norm_y_std
+    @property
+    def bandset(self) -> str:
+        return "".join([b.name for b in self.bands])
 
-    def destandardize(self, y: np.ndarray) -> np.ndarray:
-        """
-        Reverses the standardization process.
-        """
-        # return y * self.norm_y_std + self.norm_y_mean
-        return y * self.norm_y_std
+    def _init_bands(self, bands: list[Band]) -> list[Band]:
+        bands_binned = [band.binned(bin_width=1) if not band.is_binned else band for band in bands]
+        # TODO: filter
+        # TODO: Handle upper limits
+        # TODO: filter again
+        return bands_binned
+
+    def _keep_interval_relative_to_peak(self, peak_band: BandEnum, prediction_interval_from_peak: tuple[int, int]) -> None:
+        """Discards points outside the target interval relative to the peak."""
+        peak_time = self.find_peak_time(peak_band)
+        mask = ((self.X[:, 1] >= peak_time + prediction_interval_from_peak[0]) &
+                (self.X[:, 1] <= peak_time + prediction_interval_from_peak[1]))
+        self.X = self.X[mask]
+        self.y = self.y[mask]
+        self.err = self.err[mask]
+
+    def find_peak_time(self, peak_band: BandEnum) -> float:
+        band = filter(lambda band: band.name == peak_band.value, self.bands)
+        try:
+            band = next(band)
+            return band.time[np.argmax(band.flux)]
+        except StopIteration:
+            raise BandNotFoundError(f"Peak band `{peak_band}` not found in bandset `{self.bandset}`")
 
 @define
 class MGPInterpolator:
@@ -75,21 +75,23 @@ class MGPInterpolator:
     bandset: Bandset = field()
     bands: Bands = field()
     peak_band: BandEnum = field()
+    prediction_interval_from_peak: tuple[int, int] = field()  # e.g.: (-20,+100)
     normalize_y: bool = field()
     n_restarts_optimizer: int = field()
     kernel: Kernel = field(default=RBF)
     length_scale_min_bounds: tuple[float, float] = field(default=(0, np.inf))
     optimize_method: Optimizer = field(default=Optimizer.L_BFGS_B)
     random_state: int = field(default=None)
-    peak_time: float = field(init=False)
+    peak_time: float = field(init=False, default=None)
     regressor: GaussianProcessRegressor = field(init=False)
     prepared_bands: PreparedData = field(init=False)
 
     def __attrs_post_init__(self):
-        self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset))
+        self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset), self.peak_band,
+                                           self.prediction_interval_from_peak)
         self.regressor = self._init_regressor()
         self.regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
-        self.peak_time = self._init_peak_time()
+        self.peak_time = self._find_peak_time_in_predicted_data()
 
     def _init_regressor(self) -> GaussianProcessRegressor:
         kernels = self._init_kernels()
@@ -141,11 +143,11 @@ class MGPInterpolator:
 
     def _init_optimizer(self) -> str | Callable:
         if self.optimize_method == Optimizer.TRUST_CONSTR:
-            return self.trust_constr_optimizer
+            return self._trust_constr_optimizer
         return Optimizer.L_BFGS_B.value
 
     @staticmethod
-    def trust_constr_optimizer(obj_func, initial_theta, bounds):
+    def _trust_constr_optimizer(obj_func, initial_theta, bounds):
         constraints = [optimize.LinearConstraint(np.eye(initial_theta.shape[0]), bounds[:, 0], bounds[:, 1])]
         res = optimize.minimize(
             lambda theta: obj_func(theta=theta, eval_gradient=False),
@@ -158,34 +160,45 @@ class MGPInterpolator:
         )
         return res.x, res.fun
 
-    def _init_peak_time(self) -> float:
-        band = filter(lambda band: band.name == self.peak_band.value, self.prepared_bands.bands)
-        try:
-            band = next(band)
-            return band.time[np.argmax(band.flux)]
-        except StopIteration:
-            raise BandNotFoundError(f"Peak band `{self.peak_band}` not found in bandset `{self.bandset}`")
+    def _find_peak_time_in_predicted_data(self) -> float:
+        min_time = self.prepared_bands.X[:, 1].min()
+        max_time = self.prepared_bands.X[:, 1].max()
+        y_mean = self._predict_explicit(min_time, max_time, return_std=False, band=self.peak_band)
+        return min_time + y_mean.argmax()
 
-    def predict(self, days_pre_peak: int, days_post_peak: int) -> MGPResult:
+    def _predict_explicit(self, x_low: float, x_high: float, return_std: bool, band: BandEnum = None) -> np.array | tuple[np.array, np.array]:
+        """
+        Predict y values independently of peak point.
+        If specified, only return predictions to one band.
+        Returns prediction mean and standard deviation (optional).
+        """
+        x = np.linspace(x_low, x_high, int(x_high - x_low) + 1)
+        X = np.concatenate([np.column_stack((i * np.ones(len(x)), x)) for i in range(self.nr_bands)])
+        y = self.regressor.predict(X, return_std=return_std)
+        if band:
+            band_index = self.get_band_index(band)
+            mask = (X[:, 0] == band_index)
+            y = (y[0][mask], y[1][mask]) if return_std else y[mask]
+        return y
+
+    def predict_from_peak(self, prediction_interval_from_peak: tuple[int, int]) -> MGPResult:
         # TODO: handle negative predicted mean values
-        # TODO: standardization
 
-        range_width = days_post_peak + days_pre_peak
-        nr_bands = len(self.bandset.value)
-        time_new = np.linspace(self.peak_time - 2*range_width, self.peak_time + 2*range_width, 4*range_width+1)
+        if self.peak_time is None:
+            raise PeakTimeNotSetError("Set time of peak brightness before making predictions")
 
-        # predict on extended interval
-        X_new_all = np.concatenate([np.column_stack((i * np.ones(len(time_new)), time_new)) for i in range(nr_bands)])
-        y_mean_all, y_std_all = self.regressor.predict(X_new_all, return_std=True)
+        if (prediction_interval_from_peak[0] < self.prediction_interval_from_peak[0] or
+            prediction_interval_from_peak[1] > self.prediction_interval_from_peak[1]):
+            raise PredictionIntervalOutOfBoundsError(f"Given interval `{prediction_interval_from_peak}` is not within `{self.prediction_interval_from_peak}`")
 
-        # only keep values inside the original target interval
-        mask = (X_new_all[:, 1] >= self.peak_time - days_pre_peak) & (X_new_all[:, 1] <= self.peak_time + days_post_peak)
-        y_mean_all = y_mean_all[mask]
-        y_std_all = y_std_all[mask]
+        days_pre_peak, days_post_peak = -prediction_interval_from_peak[0], prediction_interval_from_peak[1]
+        range_width = days_pre_peak + days_post_peak
 
+        y_means, y_stds = self._predict_explicit(self.peak_time - days_pre_peak, self.peak_time + days_post_peak, return_std=True)
+        # handle negative values
+        # y_means, y_stds = self.y_negative_to_zero_until_infinity(y_means, y_stds)
         # reorganize to one row per band
-        y_mean_all = y_mean_all.reshape(nr_bands, range_width+1)
-        y_std_all = y_std_all.reshape(nr_bands, range_width+1)
+        y_means, y_stds = y_means.reshape(self.nr_bands, range_width+1), y_stds.reshape(self.nr_bands, range_width+1)
 
         return MGPResult(
             sn_name=self.sn_name,
@@ -194,9 +207,40 @@ class MGPInterpolator:
             days_post_peak=days_post_peak,
             log_likelihood=self.regressor.log_marginal_likelihood(),
             thetas=self.regressor.kernel_.theta,
-            pred_means={band_name: y_mean_all[i, :] for i, band_name in enumerate(self.bandset.value)},
-            pred_stds={band_name: y_std_all[i, :] for i, band_name in enumerate(self.bandset.value)},
+            pred_means={band_name: y_means[i, :] for i, band_name in enumerate(self.bandset.value)},
+            pred_stds={band_name: y_stds[i, :] for i, band_name in enumerate(self.bandset.value)},
         )
 
     def get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
         return np.linspace(self.peak_time - days_pre, self.peak_time + days_post, days_pre + days_post + 1)
+
+    def y_negative_to_zero_until_infinity(self, y_means: np.array, y_stds: np.array) -> tuple[np.array, np.array]:
+        # TODO
+        """
+        Relative to the peak point finds the two closest points (1 to the left, 1 to the right) that are negative or
+        zero and zeroes all subsequents values until infinity.
+        """
+        # find the first negative value
+        first_neg_idx = np.where(y_means < 0)[0]
+        if len(first_neg_idx) == 0:
+            return y_means, y_stds
+        first_neg_idx = first_neg_idx[0]
+
+        # find the last negative value
+        last_neg_idx = np.where(y_means < 0)[0][-1]
+
+        # zero out all values after the last negative value
+        y_means[last_neg_idx:] = 0
+        y_stds[last_neg_idx:] = 0
+
+        return y_means, y_stds
+
+    @property
+    def nr_bands(self):
+        return len(self.bandset.value)
+
+    def get_band_index(self, band: BandEnum) -> int:
+        try:
+            return self.bandset.value.index(band.value)
+        except ValueError:
+            raise BandNotFoundError(f"Band `{band}` not found in bandset `{self.bandset}`")
