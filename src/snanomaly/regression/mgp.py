@@ -109,10 +109,21 @@ class MGPInterpolator:
     def __attrs_post_init__(self):
         self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset), self.peak_band,
                                            self.prediction_interval_from_peak)
-        self.regressor = self._init_regressor()
+        self.regressor = self._init_regressor_fixed_length_scale_bounds()
         self.peak_time = self._find_peak_time_in_predicted_data()
 
-    def _init_regressor(self) -> GaussianProcessRegressor:
+    def _init_regressor_fixed_length_scale_bounds(self) -> GaussianProcessRegressor:
+        kernels = [self.kernel(length_scale_bounds=(self.length_scale_min_bounds[0], 1e4)) for _ in range(self.nr_bands)]
+        regressor = self.construct_regressor(kernels=kernels)
+        regressor, kernel_idx = self.fit_regressor(regressor=regressor)
+        if kernel_idx is not None:
+            raise CouldNotConvergeError(
+                f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
+                f"{self.length_scale_min_bounds[0]}",
+            )
+        return regressor
+
+    def _init_regressor_dynamic_length_scale_bounds(self) -> GaussianProcessRegressor:
         def search_optimal_min_length_scale(
                 low: float,
                 high: float,
@@ -130,7 +141,8 @@ class MGPInterpolator:
             mid = (low + high) / 2
             fixed_lower_bounds[curr_kernel_idx] = mid
             kernels = self._init_kernels(fixed_lower_bounds)
-            regressor, kernel_idx = self.fit_regressor(kernels=kernels)
+            regressor = self.construct_regressor(kernels)
+            regressor, kernel_idx = self.fit_regressor(regressor=regressor)
             print(f"Convergence warning raised for kernel {kernel_idx} with length-scale lower bound {mid}")
             if kernel_idx is None or kernel_idx != curr_kernel_idx:
                 # 5. don't stop the search as soon as no error is given for that kernel
@@ -160,7 +172,7 @@ class MGPInterpolator:
                                                    prev_optimal_regressor=regressor)
 
         # 1. do a test fit
-        regressor, kernel_idx = self.fit_regressor()
+        regressor, kernel_idx = self.fit_regressor(regressor=self.construct_regressor())
         if kernel_idx is None:
             # 2. if there is no convergence warning, simply return
             return regressor
@@ -206,9 +218,10 @@ class MGPInterpolator:
             random_state=self.random_state,
         )
 
-    def fit_regressor(self, kernels: Optional[Iterable[Kernel]] = None) -> tuple[GaussianProcessRegressor, Optional[int]]:
-        """Returns a fitted GP regressor and the index of the kernel that failed to converge (if any)."""
-        regressor = self.construct_regressor(kernels)
+    def fit_regressor(self, regressor: GaussianProcessRegressor) -> tuple[GaussianProcessRegressor, Optional[int]]:
+        """
+        Returns a fitted GP regressor and the index of the kernel that failed to converge (if any).
+        """
         try:
             with warnings.catch_warnings():
                 # Treat ConvergenceWarning as an error
