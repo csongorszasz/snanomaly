@@ -80,7 +80,7 @@ logger.add(
 logger.add(
     lambda msg: tqdm.write(msg, end=""),
     format="{time} | {level} | {module}:{function}:{line} - {message}",
-    level=os.environ.get("LOG_LEVEL", "INFO"),
+    level=os.environ.get("LOG_LEVEL", "DEBUG"),
     filter=lambda record: record["exception"] is None,
 )
 

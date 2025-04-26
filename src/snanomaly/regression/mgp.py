@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import re
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from enum import Enum
+from typing import Optional
 
 import numpy as np
 from attrs import define, field
-from loguru import logger
 from multistate_kernel import MultiStateKernel
 from scipy import optimize
 from sklearn.exceptions import ConvergenceWarning
@@ -19,6 +20,7 @@ from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import BandEnum, Bands
 from snanomaly.regression.exception import (
     BandNotFoundError,
+    CouldNotConvergeError,
     PeakTimeNotSetError,
     PredictionIntervalOutOfBoundsError,
 )
@@ -111,50 +113,132 @@ class MGPInterpolator:
         self.peak_time = self._find_peak_time_in_predicted_data()
 
     def _init_regressor(self) -> GaussianProcessRegressor:
-        def construct_regressor(kernel_min_bound_offset: float) -> GaussianProcessRegressor:
-            kernels = self._init_kernels(kernel_min_bound_offset)
-            scale, scale_bounds = self._init_scale_matrix()
-            ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
-            # alpha = self._init_alpha() # TODO
-            optimizer = self._init_optimizer()
-            return GaussianProcessRegressor(
-                kernel=ms_kernel,
-                # alpha=alpha, # TODO
-                optimizer=optimizer,
-                n_restarts_optimizer=self.n_restarts_optimizer,
-                # normalize_y=self.normalize_y, # TODO
-                normalize_y=False, # TODO
-                random_state=self.random_state,
-            )
+        def search_optimal_min_length_scale(
+                low: float,
+                high: float,
+                fixed_lower_bounds: dict,
+                curr_kernel_idx: int,
+                prev_kernel_warning_idx: Optional[int] = None,
+                prev_optimal_regressor: Optional[GaussianProcessRegressor] = None,
+        ) -> tuple[GaussianProcessRegressor, int]:
+            """
+            Find optimal lower bounds for kernel length-scales with binary search until no ConvergenceWarning is given.
+            Return the fitted GP regressor and optionally, the index of the kernel that raised a convergence warning on
+            the last fit.
+            """
+            print(f"Searching for optimal length-scale lower bound for kernel {curr_kernel_idx} in range [{low}, {high}]")
+            mid = (low + high) / 2
+            fixed_lower_bounds[curr_kernel_idx] = mid
+            kernels = self._init_kernels(fixed_lower_bounds)
+            regressor, kernel_idx = self.fit_regressor(kernels=kernels)
+            print(f"Convergence warning raised for kernel {kernel_idx} with length-scale lower bound {mid}")
+            if kernel_idx is None or kernel_idx != curr_kernel_idx:
+                # 5. don't stop the search as soon as no error is given for that kernel
+                # 6. continue the search until there is an error again for that kernel
+                #   and take the previous value as the optimum (or the search interval has closed up)
+                print(f"Found an optima: lengt-scale lower bound = {mid}")
+                return search_optimal_min_length_scale(low=mid, high=high,
+                                                       fixed_lower_bounds=fixed_lower_bounds,
+                                                       curr_kernel_idx=curr_kernel_idx,
+                                                       prev_kernel_warning_idx=kernel_idx,
+                                                       prev_optimal_regressor=regressor)
+            # convergence warning is raised
+            if low >= high:
+                # highest possible lower length-scale bound has been found
+                if prev_optimal_regressor is not None:
+                    # an optimum with no warning has been found already
+                    print(f"Found an optima: length-scale lower bound = {prev_optimal_regressor.kernel_.state_kernels[curr_kernel_idx].length_scale_bounds[0]}")
+                    return prev_optimal_regressor, prev_kernel_warning_idx
+                # return regressor without global optima found
+                print("! Could not converge")
+                return regressor, curr_kernel_idx
+            # the optimum may be to the left
+            return search_optimal_min_length_scale(low=low, high=mid,
+                                                   fixed_lower_bounds=fixed_lower_bounds,
+                                                   curr_kernel_idx=curr_kernel_idx,
+                                                   prev_kernel_warning_idx=kernel_idx,
+                                                   prev_optimal_regressor=regressor)
 
-        def search_optimal_min_length_scale(offset_low: float):
-            """Find optimal lower bound for kernel length-scale through trial and error."""
-            kernel_min_bound_offset = offset_low
-            step = 0.1
-            while True:
-                regressor = construct_regressor(kernel_min_bound_offset)
-                try:
-                    with warnings.catch_warnings():
-                        # Treat ConvergenceWarning as an error
-                        warnings.filterwarnings("error", category=ConvergenceWarning)
-                        regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
-                    return regressor
-                except ConvergenceWarning as ex:
-                    logger.debug(f"! ConvergenceWarning during MGP fit: {ex}")
-                    kernel_min_bound_offset -= step
-                    logger.debug(f"Retrying with kernel length-scale lower bound offset = {kernel_min_bound_offset:.2f}")
-                    continue
+        # 1. do a test fit
+        regressor, kernel_idx = self.fit_regressor()
+        if kernel_idx is None:
+            # 2. if there is no convergence warning, simply return
+            return regressor
 
-        return search_optimal_min_length_scale(0.0)
+        fixed_lower_bounds: dict = {}
+        while True:
+            # 3. save the problematic kernel's lower length-scale bound as the upper limit of a binary search
+            ls_low_bound: float = regressor.kernel_.state_kernels[kernel_idx].length_scale_bounds[0]
+            print(f"Kernels: {regressor.kernel_.state_kernels}")
+            print(f"Problematic kernel (idx={kernel_idx}) length-scale lower bound: {ls_low_bound}")
+            # 4. use binary search to find a length-scale lower bound for the problematic kernel that doesn't cause error for the that kernel
+            old_kernel_idx = kernel_idx
+            regressor, kernel_idx = search_optimal_min_length_scale(low=self.length_scale_min_bounds[0], high=ls_low_bound,
+                                                                    fixed_lower_bounds=fixed_lower_bounds,
+                                                                    curr_kernel_idx=kernel_idx,
+                                                                    prev_kernel_warning_idx=kernel_idx,
+                                                                    prev_optimal_regressor=None)
+            ls_low_bound: float = regressor.kernel_.state_kernels[kernel_idx].length_scale_bounds[0]
+            print(f"Optimized kernel (idx={kernel_idx}) length-scale lower bound: {ls_low_bound}")
+            # 7. if upon finding the optimum for the initial problematic kernel another kernel is giving convergence warning, repeat the search on that kernel
+            if kernel_idx is not None and kernel_idx != old_kernel_idx:
+                # fixate previously found length-scale lower bound
+                fixed_lower_bounds[kernel_idx] = ls_low_bound
+                # 8. repeat the search for the new kernel
+                continue
+            break
+        return regressor
 
-    def _init_kernels(self, min_bound_offset: float = 0.0) -> tuple[Kernel]:
-        time_diffs = (
-            np.max(np.diff(band.time)) if band.nr_observations > 1 else 0 for band in self.bands.get_bands(self.bandset)
+    def construct_regressor(self, kernels: Optional[Iterable[Kernel]] = None) -> GaussianProcessRegressor:
+        """Create a GP instance with the option to explicitly pass the kernels."""
+        kernels = self._init_kernels() if kernels is None else kernels
+        scale, scale_bounds = self._init_scale_matrix()
+        ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
+        # alpha = self._init_alpha() # TODO
+        optimizer = self._init_optimizer()
+        return GaussianProcessRegressor(
+            kernel=ms_kernel,
+            # alpha=alpha, # TODO
+            optimizer=optimizer,
+            n_restarts_optimizer=self.n_restarts_optimizer,
+            # normalize_y=self.normalize_y, # TODO
+            normalize_y=False,  # TODO
+            random_state=self.random_state,
         )
-        min_bounds = [
-            max(self.length_scale_min_bounds[0], min(diff, self.length_scale_min_bounds[1])) for diff in time_diffs
-        ]
-        return tuple(self.kernel(length_scale_bounds=(max(0.01, min_bound + min_bound_offset), 1e4)) for min_bound in min_bounds)
+
+    def fit_regressor(self, kernels: Optional[Iterable[Kernel]] = None) -> tuple[GaussianProcessRegressor, Optional[int]]:
+        """Returns a fitted GP regressor and the index of the kernel that failed to converge (if any)."""
+        regressor = self.construct_regressor(kernels)
+        try:
+            with warnings.catch_warnings():
+                # Treat ConvergenceWarning as an error
+                warnings.filterwarnings("error", category=ConvergenceWarning)
+                regressor.fit(self.prepared_bands.X, self.prepared_bands.y)
+                return regressor, None
+        except ConvergenceWarning as ex:
+            # extract dimension number from warning message with regex
+            kernel_idx = re.search(r"dimension (\d+)", str(ex))
+            if kernel_idx:
+                kernel_idx = int(kernel_idx.group(1))
+                return regressor, kernel_idx
+            raise CouldNotConvergeError(ex)
+
+    def _init_kernels(self, fixed_length_scale_low_bounds: Optional[dict] = None) -> tuple[Kernel]:
+        """
+        The argument is an optional dictionary of (<kernel_index>, <length_scale_lower_bound>), in case of the
+        length-scale bounds need to be explicitly given instead of dynamically found.
+        """
+        min_bounds = [None] * self.nr_bands
+        if fixed_length_scale_low_bounds:
+            for kernel_idx, low_bound in fixed_length_scale_low_bounds.items():
+                min_bounds[kernel_idx] = low_bound
+
+        for i, band in enumerate(self.bands.get_bands(self.bandset)):
+            if min_bounds[i] is None:
+                time_diff = np.max(np.diff(band.time)) if band.nr_observations > 1 else 0
+                min_bounds[i] = max(self.length_scale_min_bounds[0], min(time_diff, self.length_scale_min_bounds[1]))
+
+        return tuple(self.kernel(length_scale_bounds=(min_bound, 1e4)) for min_bound in min_bounds)
 
     def _init_scale_matrix(self) -> tuple[np.ndarray, tuple(np.ndarray, np.ndarray)]:
         """
