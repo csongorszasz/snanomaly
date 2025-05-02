@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from enum import Enum
-
 from attrs import define, field
 from plotly import graph_objects as go
 
 from snanomaly.models.sncandidate.band import Band
+from snanomaly.visualization.enums import Color
 
 
 @define
@@ -14,17 +13,6 @@ class Bandset:
 
     band_references: list[Band] = field(factory=list)
 
-
-class Color(Enum):
-    B = "#1420c7"
-    R = "#fc0000"
-    I = "#ffaa00"
-    g = "#0ceb13"
-    r = "#f75e5e"
-    i = "#fccc6d"
-    g_pr = "#08730b"
-    r_pr = "#780101"
-    i_pr = "#754e00"
 
 @define
 class PlotPhotometry:

@@ -12,6 +12,20 @@ class Bandset(Enum):
     gri = ("g", "r", "i")
     gri_primed = ("g_pr", "r_pr", "i_pr")
 
+    @classmethod
+    def _missing_(cls, value):
+        # Convert list to tuple if needed
+        if isinstance(value, list):
+            value = tuple(value)
+
+        # Search for matching enum member
+        for member in cls:
+            if member.value == value:
+                return member
+
+        # No match found
+        return None
+
     def __repr__(self):
         return str(self.value)
 

@@ -46,7 +46,7 @@ class PreparedData:
         self.y: np.array = np.concatenate([band.flux for band in self.bands])
         self.err: np.array = np.concatenate([band.e_flux for band in self.bands])
 
-        # self.norm_factor = (self.y.mean(), self.y.std())
+        # self.norm_factor = (self.y.mean(), self.y.std()) # TODO
         self.norm_factor = (0, self.y.max())
 
         self.y = self.normalize(self.y)
@@ -96,8 +96,8 @@ class MGPInterpolator:
     bands: Bands = field()
     peak_band: BandEnum = field()
     prediction_interval_from_peak: tuple[int, int] = field()  # e.g.: (-20,+100)
-    normalize_y: bool = field()
     n_restarts_optimizer: int = field()
+    normalize_y: bool = field(default=False)
     kernel: Kernel = field(default=RBF)
     length_scale_min_bounds: tuple[float, float] = field(default=(0, np.inf))
     optimize_method: Optimizer = field(default=Optimizer.L_BFGS_B)

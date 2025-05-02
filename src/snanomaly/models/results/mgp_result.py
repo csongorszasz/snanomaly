@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import cattrs
 import polars as pl
 from attrs import define, field
 
+from snanomaly.models.results.result import Result
 from snanomaly.models.sncandidate import Bandset
 
 
 @define
-class MGPResult:
+class MGPResult(Result):
     """
     Model for a Multivariate Gaussian Process interpolation result.
     The means and standard deviations of predictions are stored in `pred_means` and `pred_stds`.
@@ -22,13 +22,6 @@ class MGPResult:
     thetas: list[float] = field()
     pred_means: dict = field()
     pred_stds: dict = field()
-
-    def to_dataframe(self) -> pl.DataFrame:
-        """Converting to Polars DataFrame with only one row being created."""
-        data: dict = {}
-        for key, value in cattrs.unstructure(self).items():
-            data[key] = [value]
-        return pl.DataFrame(data)
 
 def write():
     print("Writing")
@@ -46,7 +39,14 @@ def write():
 def read():
     print("Reading")
     lf = pl.scan_parquet("test.parquet")
-    print(lf.collect(streaming=True))
+    df = lf.collect(streaming=True)
+    mgp_res = MGPResult.from_dataframe(df)
+    print(mgp_res)
+    # df_dict = df.to_dict()
+    # print(json.dumps(df_dict, indent=4))
+    # mgp_res = cattrs.structure(df.to_dict(), MGPResult)
+    # print(mgp_res)
+
 
 # write()
 # read()
