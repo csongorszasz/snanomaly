@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import polars as pl
 from attrs import define, field
 
@@ -16,6 +17,7 @@ class MGPResult(Result):
 
     sn_name: str = field()
     bandset: Bandset = field()
+    peak_time: float = field()
     days_pre_peak: int = field()
     days_post_peak: int = field()
     log_likelihood: float = field()
@@ -23,10 +25,16 @@ class MGPResult(Result):
     pred_means: dict = field()
     pred_stds: dict = field()
 
+    def __attrs_post_init__(self):
+        for k, v in self.pred_means.items():
+            self.pred_means[k] = np.array(v)
+        for k, v in self.pred_stds.items():
+            self.pred_stds[k] = np.array(v)
+
 def write():
     print("Writing")
     res = MGPResult("a",
-                    Bandset.gri, 20, 100,
+                    Bandset.gri, 53021.0, 20, 100,
                     -1.234,
                     [0.2, 0.5, 4.5],
                     {"g": [1.0, 2.0, 3.0], "r": [0.2, 1., 2.], "i": [1.,2.,3.]},

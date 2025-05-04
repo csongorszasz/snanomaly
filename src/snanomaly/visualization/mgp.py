@@ -8,7 +8,7 @@ from attrs import define, field
 
 from snanomaly.models.results.mgp_result import MGPResult
 from snanomaly.models.sncandidate.band import Band
-from snanomaly.models.sncandidate.bands import BandEnum
+from snanomaly.models.sncandidate.bands import BandEnum, Bands
 from snanomaly.regression.mgp import MGPInterpolator
 from snanomaly.visualization.enums import Color
 from snanomaly.visualization.figlayout import FigLayout
@@ -16,7 +16,7 @@ from snanomaly.visualization.figlayout import FigLayout
 
 @define
 class PlotMGP:
-    interpolator: MGPInterpolator = field()
+    original_bands: Bands = field()
     mgp_result: MGPResult = field()
     figure: go.Figure = field(factory=go.Figure, init=False)
 
@@ -28,7 +28,7 @@ class PlotMGP:
 
     def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()
-        for band in self.interpolator.bands.get_bands(self.interpolator.bandset):
+        for band in self.original_bands.get_bands(self.mgp_result.bandset):
             if bands and BandEnum[band.name] not in bands:
                 continue
             self._add_band_to_figure(band)
@@ -47,7 +47,7 @@ class PlotMGP:
         # interpolation
         y_mean = self.mgp_result.pred_means.get(band.name)
         y_std = self.mgp_result.pred_stds.get(band.name)
-        pred_x = self.interpolator.get_interval_relative_to_peak(20, 100)
+        pred_x = MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time, 20, 100)
         self.figure.add_trace(go.Scatter(
             x=pred_x,
             y=y_mean,

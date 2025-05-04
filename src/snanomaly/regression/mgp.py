@@ -340,6 +340,7 @@ class MGPInterpolator:
         return MGPResult(
             sn_name=self.sn_name,
             bandset=self.bandset,
+            peak_time=self.peak_time,
             days_pre_peak=days_pre_peak,
             days_post_peak=days_post_peak,
             log_likelihood=self.regressor.log_marginal_likelihood(),
@@ -348,8 +349,9 @@ class MGPInterpolator:
             pred_stds={band_name: y_stds[i, :] for i, band_name in enumerate(self.bandset.value)},
         )
 
-    def get_interval_relative_to_peak(self, days_pre: int, days_post: int) -> np.array:
-        return np.linspace(self.peak_time - days_pre, self.peak_time + days_post, days_pre + days_post + 1)
+    @staticmethod
+    def get_interval_relative_to_peak(peak_time: float, days_pre: int, days_post: int) -> np.array:
+        return np.linspace(peak_time - days_pre, peak_time + days_post, days_pre + days_post + 1)
 
     def _y_negative_to_zero_until_infinity(self, peak_idx: int, y_means: np.ndarray, y_stds: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
