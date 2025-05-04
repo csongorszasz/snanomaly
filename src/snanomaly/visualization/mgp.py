@@ -47,7 +47,9 @@ class PlotMGP:
         # interpolation
         y_mean = self.mgp_result.pred_means.get(band.name)
         y_std = self.mgp_result.pred_stds.get(band.name)
-        pred_x = MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time, 20, 100)
+        pred_x = MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time,
+                                                               self.mgp_result.days_pre_peak,
+                                                               self.mgp_result.days_post_peak)
         self.figure.add_trace(go.Scatter(
             x=pred_x,
             y=y_mean,
