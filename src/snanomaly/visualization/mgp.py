@@ -22,8 +22,15 @@ class PlotMGP:
 
     def __attrs_post_init__(self):
         self.figure.update_layout(FigLayout.light_curves())
+        self.figure.update_xaxes(range=[self.prediction_interval.min(), self.prediction_interval.max()])
         self.set_title(self.mgp_result.sn_name)
         self.set_bands()
+
+    @property
+    def prediction_interval(self):
+        return MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time,
+                                                             self.mgp_result.days_pre_peak,
+                                                             self.mgp_result.days_post_peak)
 
     def set_title(self, title: str):
         self.figure.update_layout(title={"text": title, "x": 0.5})
@@ -51,9 +58,7 @@ class PlotMGP:
         band_index = MGPInterpolator.get_band_index(BandEnum(band.name), self.mgp_result.bandset)
         y_mean = self.mgp_result.pred_means[band_index]
         y_std = self.mgp_result.pred_stds[band_index]
-        pred_x = MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time,
-                                                               self.mgp_result.days_pre_peak,
-                                                               self.mgp_result.days_post_peak)
+        pred_x = self.prediction_interval
         self.figure.add_trace(go.Scatter(
             x=pred_x,
             y=y_mean,
