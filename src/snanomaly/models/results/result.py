@@ -19,7 +19,7 @@ class Result:
 
     def to_dataframe(self) -> pl.DataFrame:
         """Converting to Polars DataFrame with only one row being created."""
-        return pl.DataFrame(self.to_dict_dataframe_ready())
+        return pl.DataFrame([self.to_dict_dataframe_ready()])
 
     @classmethod
     def from_dict(cls, row: dict) -> Result:

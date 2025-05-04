@@ -22,14 +22,8 @@ class MGPResult(Result):
     days_post_peak: int = field()
     log_likelihood: float = field()
     thetas: list[float] = field()
-    pred_means: dict = field()
-    pred_stds: dict = field()
-
-    def __attrs_post_init__(self):
-        for k, v in self.pred_means.items():
-            self.pred_means[k] = np.array(v)
-        for k, v in self.pred_stds.items():
-            self.pred_stds[k] = np.array(v)
+    pred_means: list[np.ndarray] = field()
+    pred_stds: list[np.ndarray] = field()
 
 def write():
     print("Writing")

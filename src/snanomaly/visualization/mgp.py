@@ -22,6 +22,8 @@ class PlotMGP:
 
     def __attrs_post_init__(self):
         self.figure.update_layout(FigLayout.light_curves())
+        self.set_title(self.mgp_result.sn_name)
+        self.set_bands()
 
     def set_title(self, title: str):
         self.figure.update_layout(title={"text": title, "x": 0.5})
@@ -37,6 +39,7 @@ class PlotMGP:
         color = self._get_band_color(band)
 
         # ground truth
+        # TODO: error bars
         self.figure.add_trace(go.Scatter(
             x=band.time,
             y=band.flux,
@@ -45,8 +48,9 @@ class PlotMGP:
             marker={"color": color, "symbol": "x"},
         ))
         # interpolation
-        y_mean = self.mgp_result.pred_means.get(band.name)
-        y_std = self.mgp_result.pred_stds.get(band.name)
+        band_index = MGPInterpolator.get_band_index(BandEnum(band.name), self.mgp_result.bandset)
+        y_mean = self.mgp_result.pred_means[band_index]
+        y_std = self.mgp_result.pred_stds[band_index]
         pred_x = MGPInterpolator.get_interval_relative_to_peak(self.mgp_result.peak_time,
                                                                self.mgp_result.days_pre_peak,
                                                                self.mgp_result.days_post_peak)

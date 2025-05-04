@@ -312,7 +312,7 @@ class MGPInterpolator:
         X = np.concatenate([np.column_stack((i * np.ones(len(x)), x)) for i in range(self.nr_bands)])
         y = self.regressor.predict(X, return_std=return_std)
         if band:
-            band_index = self.get_band_index(band)
+            band_index = self.get_band_index(band, self.bandset)
             mask = (X[:, 0] == band_index)
             y = (y[0][mask], y[1][mask]) if return_std else y[mask]
         return y
@@ -345,8 +345,8 @@ class MGPInterpolator:
             days_post_peak=days_post_peak,
             log_likelihood=self.regressor.log_marginal_likelihood(),
             thetas=self.regressor.kernel_.theta,
-            pred_means={band_name: y_means[i, :] for i, band_name in enumerate(self.bandset.value)},
-            pred_stds={band_name: y_stds[i, :] for i, band_name in enumerate(self.bandset.value)},
+            pred_means=[y_means[i, :] for i in range(self.nr_bands)],
+            pred_stds=[y_stds[i, :] for i in range(self.nr_bands)],
         )
 
     @staticmethod
@@ -383,8 +383,9 @@ class MGPInterpolator:
     def nr_bands(self):
         return len(self.bandset.value)
 
-    def get_band_index(self, band: BandEnum) -> int:
+    @staticmethod
+    def get_band_index(band: BandEnum, bandset: Bandset) -> int:
         try:
-            return self.bandset.value.index(band.value)
+            return bandset.value.index(band.value)
         except ValueError:
-            raise BandNotFoundError(f"Band `{band}` not found in bandset `{self.bandset}`")
+            raise BandNotFoundError(f"Band `{band}` not found in bandset `{bandset}`")

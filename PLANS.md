@@ -6,8 +6,6 @@
 - validate objects for adherence to requirements before passing them on
   - ~~has photometric data~~ 
   - ~~minimum 3 photometric observations per band with 3-day binning~~
-  - (?) save band binning after passing validation (maybe not necessary)
-  - etc. TODO
 
 - binned curve plotting
   - ~~plot binned dots~~ 
@@ -28,6 +26,7 @@
   - Support Vector Machines
   - Gradient Boosting Regression
 - visualization of reconstructed lightcurves
+  - error bars for ground truth data points
 
 ### Dimensionality Reduction
 - dimensionality reduction with:
