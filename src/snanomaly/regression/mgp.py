@@ -30,6 +30,12 @@ class Optimizer(Enum):
     L_BFGS_B = "fmin_l_bfgs_b"
     TRUST_CONSTR = "trust-constr"
 
+class LengthScaleBoundsInitStrategy(Enum):
+    STATIC = 0
+    DYNAMIC_SET_ONCE = 1
+    DYNAMIC_BIN_SEARCH = 2
+
+
 class PreparedData:
     """
     Represents the data format required by a MultiStateKernel.
@@ -97,6 +103,7 @@ class MGPInterpolator:
     peak_band: BandEnum = field()
     prediction_interval_from_peak: tuple[int, int] = field()  # e.g.: (-20,+100)
     n_restarts_optimizer: int = field()
+    length_scale_bounds_init_strategy: LengthScaleBoundsInitStrategy = field()
     normalize_y: bool = field(default=False)
     kernel: Kernel = field(default=RBF)
     length_scale_min_bounds: tuple[float, float] = field(default=(0, np.inf))
@@ -109,10 +116,18 @@ class MGPInterpolator:
     def __attrs_post_init__(self):
         self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset), self.peak_band,
                                            self.prediction_interval_from_peak)
-        self.regressor = self._init_regressor_fixed_length_scale_bounds()
+        self.regressor = self._init_regressor()
         self.peak_time = self._find_peak_time_in_predicted_data()
 
-    def _init_regressor_fixed_length_scale_bounds(self) -> GaussianProcessRegressor:
+    def _init_regressor(self):
+        strategies = {
+            LengthScaleBoundsInitStrategy.STATIC.value: self._init_regressor_static_length_scale_bounds,
+            LengthScaleBoundsInitStrategy.DYNAMIC_SET_ONCE.value: self._init_regressor_dynamic_length_scale_bounds_set_once,
+            LengthScaleBoundsInitStrategy.DYNAMIC_BIN_SEARCH.value: self._init_regressor_dynamic_length_scale_bounds_binary_search,
+        }
+        return strategies[self.length_scale_bounds_init_strategy.value]()
+
+    def _init_regressor_static_length_scale_bounds(self) -> GaussianProcessRegressor:
         kernels = [self.kernel(length_scale_bounds=(self.length_scale_min_bounds[0], 1e4)) for _ in range(self.nr_bands)]
         regressor = self.construct_regressor(kernels=kernels)
         regressor, kernel_idx = self.fit_regressor(regressor=regressor)
@@ -123,7 +138,17 @@ class MGPInterpolator:
             )
         return regressor
 
-    def _init_regressor_dynamic_length_scale_bounds(self) -> GaussianProcessRegressor:
+    def _init_regressor_dynamic_length_scale_bounds_set_once(self) -> GaussianProcessRegressor:
+        regressor = self.construct_regressor()
+        regressor, kernel_idx = self.fit_regressor(regressor=regressor)
+        # if kernel_idx is not None:
+        #     raise CouldNotConvergeError(
+        #         f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
+        #         f"{self.length_scale_min_bounds[0]}",
+        #     )
+        return regressor
+
+    def _init_regressor_dynamic_length_scale_bounds_binary_search(self) -> GaussianProcessRegressor:
         def search_optimal_min_length_scale(
                 low: float,
                 high: float,
