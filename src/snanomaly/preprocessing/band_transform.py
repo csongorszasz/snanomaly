@@ -56,17 +56,18 @@ class BandTransform:
 
         source_bandset = Bandset.BRI
 
-        return df.with_columns(
-            pl.col(pred_means_col)
-            .where(pl.col(bandset_col) == source_bandset.value)
-            .map_elements(
+        return df.with_columns([
+            pl.when(pl.col(bandset_col) == source_bandset.value)
+            .then(pl.col(pred_means_col).map_elements(
                 lambda x: cls._transform(light_curves=x, A=A, b=b),
                 return_dtype=list[list[float]],
-            ),
-        )
+            ))
+            .otherwise(pl.col(pred_means_col))
+            .alias(pred_means_col),
+        ])
 
     @classmethod
-    def _transform(cls, light_curves: list[list[float]], A: list[list[float]], b: list[float]) -> list[list[float]]:
+    def _transform(cls, light_curves: list[list[float]] | pl.Series, A: list[list[float]], b: list[float]) -> list[list[float]]:
         """
         Solves `Ax = b` for x.
 
@@ -79,16 +80,33 @@ class BandTransform:
 
         A = np.asarray(A)
         b = np.asarray(b)
+
+        if isinstance(light_curves, pl.Series):
+            light_curves = light_curves.to_list()
         light_curves = np.asarray(light_curves)
-        # convert fluxes to magnitudes
-        light_curves = -2.5 * np.log10(light_curves)
+        print("to mags")
+        light_curves = cls.fluxes_to_mags(light_curves)
+        # TODO: duplicate bands if required by the system of equations (e.g.: in B,R,R,I the `R` is present twice)
 
         solve = cls._solve_least_square if num_equations > num_unknowns else cls._solve_linear
+        print("solving")
         transformed = solve(light_curves, A, b)
-        # convert magnitudes to fluxes
-        transformed = 10 ** (-0.4 * transformed)
+        print("to fluxes")
+        transformed = cls.mags_to_fluxes(transformed)
+        print("before toList", transformed)
+        transformed = transformed.tolist()
+        print("after toList", transformed)
+        return transformed
 
-        return transformed.tolist()
+    @classmethod
+    def fluxes_to_mags(cls, fluxes: np.ndarray) -> np.ndarray:
+        mags = np.where(fluxes > 1e-8, fluxes, np.nan)
+        return -2.5 * np.log10(mags)
+
+    @classmethod
+    def mags_to_fluxes(cls, mags: np.ndarray) -> np.ndarray:
+        fluxes = 10 ** (-0.4 * mags)
+        return np.where(fluxes == np.nan, 0, fluxes)
 
     @classmethod
     def _solve_linear(cls, light_curves: np.ndarray, A: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -96,4 +114,5 @@ class BandTransform:
 
     @classmethod
     def _solve_least_square(cls, light_curves: np.ndarray, A: np.ndarray, b: np.ndarray) -> np.ndarray:
-        return np.linalg.lstsq(A, light_curves - b, rcond=None)
+        print("lightcurves", light_curves.shape, light_curves)
+        return np.linalg.lstsq(A, light_curves - b, rcond=None)[0]
