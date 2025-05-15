@@ -5,7 +5,7 @@ import polars as pl
 from attrs import define
 
 from snanomaly.models.sncandidate import Bandset
-from snanomaly.preprocessing.exc import ColumnNotFoundError
+from snanomaly.preprocessing.exception import ColumnNotFoundError, InvalidTransformationTableError
 
 
 @define
@@ -34,6 +34,7 @@ class BandTransform:
                [0.,0.7064,0.2936],
                [0.,-0.2444,1.2444]],
             b=[0.2271,-0.0971,-0.1439,-0.3820],
+            transform_table=[0, 1, 1, 2],
             df=df,
             bandset_col=bandset_col,
             pred_means_col=pred_means_col,
@@ -44,6 +45,7 @@ class BandTransform:
             cls,
             A: list[list[float]],
             b: list[float],
+            transform_table: list[int],
             df: pl.DataFrame,
             bandset_col: str = "bandset",
             pred_means_col: str = "pred_means",
@@ -59,7 +61,7 @@ class BandTransform:
         return df.with_columns([
             pl.when(pl.col(bandset_col) == source_bandset.value)
             .then(pl.col(pred_means_col).map_elements(
-                lambda x: cls._transform(light_curves=x, A=A, b=b),
+                lambda x: cls._transform(light_curves=x, A=A, b=b, transform_table=transform_table),
                 return_dtype=list[list[float]],
             ))
             .otherwise(pl.col(pred_means_col))
@@ -67,16 +69,34 @@ class BandTransform:
         ])
 
     @classmethod
-    def _transform(cls, light_curves: list[list[float]] | pl.Series, A: list[list[float]], b: list[float]) -> list[list[float]]:
+    def _transform(
+            cls,
+            light_curves: list[list[float]] | pl.Series,
+            A: list[list[float]],
+            b: list[float],
+            transform_table: list[int],
+    ) -> list[list[float]]:
         """
-        Solves `Ax = b` for x.
+        Solves `Ax = b` for x, where x is the transformed light curves.
 
-        A: the coefficient matrix of the target bands (e.g.: 3 columns of A correspond to  g, r and i bands)
-        x: the magnitudes of the target bands
-        b: column vector for constants
+        Parameters
+        ----------
+        A
+            A list of lists that represents the coefficient matrix. Each column corresponds to a band.
+        b
+            A list of floats that represents the constant vector. Each element corresponds to a band.
+        transform_table
+            A list of integers that maps the columns of the coefficient matrix to the light curves.
+            For example, if the coefficient matrix has 4 columns and the light curves have 3 bands = `BRI`,
+            then `transform_table = [0, 1, 1, 2]` means that the first column of A corresponds to band `B`,
+            the second column corresponds to `R`, the third column to `R` and the fourth to `I`.
+
         """
         num_equations = len(A)
         num_unknowns = len(light_curves)
+
+        if min(transform_table) < 0 or max(transform_table) >= num_unknowns:
+            raise InvalidTransformationTableError(f"Transform table values must be within [0, {num_unknowns}), but got {transform_table}")
 
         A = np.asarray(A)
         b = np.asarray(b)
@@ -84,18 +104,18 @@ class BandTransform:
         if isinstance(light_curves, pl.Series):
             light_curves = light_curves.to_list()
         light_curves = np.asarray(light_curves)
-        print("to mags")
         light_curves = cls.fluxes_to_mags(light_curves)
-        # TODO: duplicate bands if required by the system of equations (e.g.: in B,R,R,I the `R` is present twice)
+
+        light_curves = light_curves[transform_table, :]
 
         solve = cls._solve_least_square if num_equations > num_unknowns else cls._solve_linear
-        print("solving")
-        transformed = solve(light_curves, A, b)
-        print("to fluxes")
+        transformed = np.empty((num_unknowns, light_curves.shape[1]))
+        for i in range(light_curves.shape[1]):
+            transformed[:, i] = solve(light_curves[:, i], A, b)
+
         transformed = cls.mags_to_fluxes(transformed)
-        print("before toList", transformed)
         transformed = transformed.tolist()
-        print("after toList", transformed)
+
         return transformed
 
     @classmethod
@@ -106,7 +126,8 @@ class BandTransform:
     @classmethod
     def mags_to_fluxes(cls, mags: np.ndarray) -> np.ndarray:
         fluxes = 10 ** (-0.4 * mags)
-        return np.where(fluxes == np.nan, 0, fluxes)
+        fluxes[np.isnan(fluxes)] = 0
+        return fluxes
 
     @classmethod
     def _solve_linear(cls, light_curves: np.ndarray, A: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -114,5 +135,4 @@ class BandTransform:
 
     @classmethod
     def _solve_least_square(cls, light_curves: np.ndarray, A: np.ndarray, b: np.ndarray) -> np.ndarray:
-        print("lightcurves", light_curves.shape, light_curves)
         return np.linalg.lstsq(A, light_curves - b, rcond=None)[0]

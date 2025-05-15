@@ -3,3 +3,6 @@ class PreprocessingError(Exception):
 
 class ColumnNotFoundError(PreprocessingError):
     pass
+
+class InvalidTransformationTableError(PreprocessingError):
+    pass
