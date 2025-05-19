@@ -1,8 +1,19 @@
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from attrs import define, field
 from attrs.converters import optional
+
+
+def validate_not_true(instance: Any, attribute: Any, value: Any) -> None:
+    if value is True:
+        raise ValueError(f"{attribute.name} cannot be True for valid observations")
+
+
+def validate_must_be_none(instance: Any, attribute: Any, value: Any) -> None:
+    if value is not None:
+        raise ValueError(f"{attribute.name} must be None for valid observations")
+
 
 
 @define
@@ -12,10 +23,9 @@ class Observation:
     """
 
     source: str = field()
-    time: Optional[float | list] = field(
-        default=None,
+    time: float = field(
         converter=optional(lambda x: (float(x[0]) + float(x[1])) / 2 if isinstance(x, list) else float(x)),
-    )  # TODO: check for presence, if not present -> skip
+    )
     e_time: Optional[float] = field(default=np.nan)
     e_lower_time: Optional[float] = field(default=np.nan)
     e_upper_time: Optional[float] = field(default=np.nan)
@@ -27,7 +37,7 @@ class Observation:
     observer: Optional[str] = field(default=None)
     reducer: Optional[str] = field(default=None)
     airmass: Optional[float] = field(default=None)
-    host: Optional[bool] = field(default=None)  # TODO: check for presence, if present -> skip
+    host: Optional[bool] = field(default=None, validator=validate_not_true)
     includeshost: Optional[bool] = field(default=None)
-    model: Optional[str] = field(default=None) # TODO: check for presence, if present -> skip
-    realization: Optional[int] = field(default=None) # TODO: check for presence, if present -> skip
+    model: Optional[str] = field(default=None, validator=validate_must_be_none)
+    realization: Optional[int] = field(default=None, validator=validate_must_be_none)

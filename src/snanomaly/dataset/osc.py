@@ -7,14 +7,13 @@ from typing import Optional
 
 import cattrs
 from attrs import define
-from cattrs import structure
+from cattrs import structure, transform_error
 from loguru import logger
 
 from snanomaly.dataset.dataset import Dataset
 from snanomaly.dataset.exception import (
     DataPointNotFoundError,
     DatasetError,
-    InvalidDataPointError,
     InvalidDataPointSchemaError,
 )
 from snanomaly.models.sncandidate.sncandidate import SNCandidate
@@ -46,7 +45,7 @@ class OSC(Dataset):
                     yield data
                     data = []
             except DatasetError as ex:
-                logger.warning(f"Failed to load `{file}`: {ex}")
+                logger.warning(f"Skipped invalid file `{file}`: {ex}")
 
         if data:  # yield any remaining data
             yield data
@@ -67,6 +66,10 @@ class OSC(Dataset):
                 if datapoint is None:
                     raise InvalidDataPointSchemaError
                 return structure(datapoint, SNCandidate)
-            except (json.JSONDecodeError, ValueError, TypeError, cattrs.errors.ExceptionGroup) as ex:
+            except cattrs.errors.ExceptionGroup as ex:
+                err_msg = transform_error(ex)
+                logger.exception(err_msg)
+                raise InvalidDataPointSchemaError(err_msg)
+            except (json.JSONDecodeError, ValueError, TypeError) as ex:
                 logger.exception(ex)
-                raise InvalidDataPointError
+                raise InvalidDataPointSchemaError
