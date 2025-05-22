@@ -15,6 +15,12 @@ def validate_must_be_none(instance: Any, attribute: Any, value: Any) -> None:
         raise ValueError(f"{attribute.name} must be None for valid observations")
 
 
+def validate_non_negative_finite_or_nan(instance: Any, attribute: Any, value: Any) -> None:
+    if np.isnan(value):
+        return
+    if not np.isfinite(value) or value < 0:
+        raise ValueError(f"{attribute.name} must be a non-negative finite number")
+
 
 @define
 class Observation:
@@ -24,9 +30,9 @@ class Observation:
 
     source: str = field()
     time: float = field(
-        converter=optional(lambda x: (float(x[0]) + float(x[1])) / 2 if isinstance(x, list) else float(x)),
+        converter=optional(lambda x: np.mean([float(t) for t in x]) if isinstance(x, list) else float(x)),
     )
-    e_time: Optional[float] = field(default=np.nan)
+    e_time: Optional[float] = field(default=np.nan, validator=validate_non_negative_finite_or_nan)
     e_lower_time: Optional[float] = field(default=np.nan)
     e_upper_time: Optional[float] = field(default=np.nan)
     u_time: Optional[str] = field(default=None)

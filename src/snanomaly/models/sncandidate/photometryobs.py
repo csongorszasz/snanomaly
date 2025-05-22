@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from attrs import define, field
+from attrs import define, field, validators
 
 from snanomaly.models.sncandidate.observation import Observation
 
@@ -23,13 +23,13 @@ class PhotometryObs(Observation):
 
     magnitude: Optional[float] = field(default=None)
     flux: Optional[float] = field(default=None)
-    e_flux: Optional[float] = field(default=np.nan)  # TODO: set in post init
-    e_magnitude: Optional[float] = field(default=np.nan)
-    e_lower_magnitude: Optional[float] = field(default=np.nan)
-    e_upper_magnitude: Optional[float] = field(default=np.nan)
+    e_flux: Optional[float] = field(default=np.nan, init=False)
+    e_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
+    e_lower_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
+    e_upper_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
     zeropoint: Optional[float] = field(default=None)
-    band: Optional[str] = field(default=None) # TODO: check for presence, if not present -> skip
-    bandset: Optional[str] = field(default=None) # TODO: check if `band` is in `bandset`, if not -> skip
+    band: Optional[str] = field(default=None, validator=validators.instance_of(str))
+    bandset: Optional[str] = field(default=None) # TODO: handle differences between band set systems (e.g.: AB vs UBVRI vs VEGA)
     system: Optional[str] = field(default=None)
     upperlimit: Optional[bool] = field(default=False)
     upperlimitsigma: Optional[float] = field(default=None)
@@ -48,7 +48,6 @@ class PhotometryObs(Observation):
             - convert using zero-point
             - convert count rate to flux
             - convert flux density to flux
-            - factor in errors
 
         """
         if self.zeropoint is None:
@@ -57,7 +56,8 @@ class PhotometryObs(Observation):
             self.flux = self._flux_from_magnitude(self.magnitude, self.zeropoint)
         elif self.magnitude is None and self.flux is not None:
             self.magnitude = self._magnitude_from_flux(self.flux, self.zeropoint)
-        # TODO: finish the rest of the conversions (e.g.: e_flux)
+
+        self._init_errors()
 
     @staticmethod
     def _flux_from_magnitude(mag: float, zp: float) -> float:
@@ -67,4 +67,23 @@ class PhotometryObs(Observation):
     def _magnitude_from_flux(flux: float, zp: float) -> float:
         return -2.5 * np.log10(flux / zp)
 
+    def _init_errors(self):
+        if not np.isnan(self.e_lower_magnitude) and not np.isnan(self.e_upper_magnitude):
+            e_lower_flux = self._flux_from_magnitude(self.magnitude + self.e_lower_magnitude, self.zeropoint)
+            e_upper_flux = self._flux_from_magnitude(self.magnitude - self.e_upper_magnitude, self.zeropoint)
+            self.e_flux = 0.5 * (e_upper_flux - e_lower_flux)
+            if not np.isfinite(self.e_flux):
+                raise ValueError("e_flux is not finite")
+        elif not np.isnan(self.e_magnitude):
+            self.e_flux = 0.4 * np.log(10) * self.flux * self.e_magnitude
+            if not np.isfinite(self.e_flux):
+                raise ValueError("e_flux is not finite")
+        else:
+            self.e_magnitude = np.nan
+            self.e_lower_magnitude = np.nan
+            self.e_upper_magnitude = np.nan
+
+import cattrs
+
+cattrs.structure({"source": "a", "time": 1, "magnitude": 1, "band": "V"}, PhotometryObs)
 
