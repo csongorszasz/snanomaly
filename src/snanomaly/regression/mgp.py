@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Optional
 
 import numpy as np
+import scipy
 from attrs import define, field
 from multistate_kernel import MultiStateKernel
 from scipy import optimize
@@ -50,12 +51,16 @@ class PreparedData:
             [np.column_stack((i * np.ones(band.nr_observations), band.time)) for i, band in enumerate(self.bands)],
         )
         self.y: np.array = np.concatenate([band.flux for band in self.bands])
+        # print("y After concatenation:", self.y)
         self.err: np.array = np.concatenate([band.e_flux for band in self.bands])
+        # print("err After concatenation:", self.y)
 
-        # self.norm_factor = (self.y.mean(), self.y.std()) # TODO
+        # self.norm_factor = (self.y.mean(), self.y.std())
         self.norm_factor = (0, self.y.max())
+        # print("Norm factor:",self.norm_factor)
 
         self.y = self.normalize(self.y)
+        # print("y After normalization:", self.y)
 
         self._keep_interval_relative_to_peak(peak_band, prediction_interval_from_peak)
 
@@ -116,36 +121,62 @@ class MGPInterpolator:
     def __attrs_post_init__(self):
         self.prepared_bands = PreparedData(self.bands.get_bands(self.bandset), self.peak_band,
                                            self.prediction_interval_from_peak)
+        self._verify_prepared_bands()
+
         self.regressor = self._init_regressor()
+        self._verify_fit()
+
         self.peak_time = self._find_peak_time_in_predicted_data()
+
+    def _verify_prepared_bands(self):
+        assert not np.isnan(self.prepared_bands.X).any(), "X contains NaNs"
+        # print(self.prepared_bands.y)
+        assert not np.isnan(self.prepared_bands.y).any(), "y contains NaNs"
+        assert np.isfinite(self.prepared_bands.X).all(), "X contains non-finite values"
+        assert np.isfinite(self.prepared_bands.y).all(), "y contains non-finite values"
+
+    def _verify_fit(self):
+        assert self.regressor is not None, "Regressor is not initialized"
+        assert self.regressor.kernel_ is not None, "Kernel is not initialized"
+        assert self.regressor.kernel_.state_kernels is not None, "State kernels are not initialized"
+        assert self.regressor.kernel_.theta is not None, "Theta is not initialized"
 
     def _init_regressor(self):
         strategies = {
             LengthScaleBoundsInitStrategy.STATIC.value: self._init_regressor_static_length_scale_bounds,
             LengthScaleBoundsInitStrategy.DYNAMIC_SET_ONCE.value: self._init_regressor_dynamic_length_scale_bounds_set_once,
             LengthScaleBoundsInitStrategy.DYNAMIC_BIN_SEARCH.value: self._init_regressor_dynamic_length_scale_bounds_binary_search,
+
+            ####################################################
+            # TODO: 3-SIGMA szabaly a length scale beallitasahoz
+            ####################################################
+            # channel-enkent kiszamolni a 3sigma szorast
+            # -> az RBF kernel length scale parameteret beallitani 3*sigmara (megjegyzes: a length scale az adatok 99.7%-ara illeszkednie kell)
+            # az OSSZES szupernova menten
+            # ? van-e hiperparameter tuning alapertelmezetten
         }
         return strategies[self.length_scale_bounds_init_strategy.value]()
 
     def _init_regressor_static_length_scale_bounds(self) -> GaussianProcessRegressor:
         kernels = [self.kernel(length_scale_bounds=(self.length_scale_min_bounds[0], 1e4)) for _ in range(self.nr_bands)]
+        # kernels = [self.kernel(length_scale=1e-7) for _ in range(self.nr_bands)]
         regressor = self.construct_regressor(kernels=kernels)
         regressor, kernel_idx = self.fit_regressor(regressor=regressor)
         if kernel_idx is not None:
             raise CouldNotConvergeError(
                 f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
-                f"{self.length_scale_min_bounds[0]}",
+                f"{self.length_scale_min_bounds[0]}, , length-scale: {regressor.kernel_.state_kernels[kernel_idx].length_scale_bounds[0]}",
             )
         return regressor
 
     def _init_regressor_dynamic_length_scale_bounds_set_once(self) -> GaussianProcessRegressor:
         regressor = self.construct_regressor()
         regressor, kernel_idx = self.fit_regressor(regressor=regressor)
-        # if kernel_idx is not None:
-        #     raise CouldNotConvergeError(
-        #         f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
-        #         f"{self.length_scale_min_bounds[0]}",
-        #     )
+        if kernel_idx is not None:
+            raise CouldNotConvergeError(
+                f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
+                f"{self.length_scale_min_bounds[0]}, length-scale: {regressor.kernel_.state_kernels[kernel_idx].length_scale_bounds[0]}",
+            )
         return regressor
 
     def _init_regressor_dynamic_length_scale_bounds_binary_search(self) -> GaussianProcessRegressor:
@@ -235,8 +266,9 @@ class MGPInterpolator:
         optimizer = self._init_optimizer()
         return GaussianProcessRegressor(
             kernel=ms_kernel,
-            # alpha=alpha, # TODO
-            optimizer=optimizer,
+            # alpha=1e-5, # TODO
+            # optimizer=optimizer,
+            optimizer=self._fmin_opt,
             n_restarts_optimizer=self.n_restarts_optimizer,
             # normalize_y=self.normalize_y, # TODO
             normalize_y=False,  # TODO
@@ -318,6 +350,18 @@ class MGPInterpolator:
             jac=lambda theta: obj_func(theta=theta, eval_gradient=True)[1],
             hess=optimize.BFGS(),
             options=dict(gtol=1e-6),
+        )
+        return res.x, res.fun
+
+    @staticmethod
+    def _fmin_opt(obj_func, initial_theta, bounds):
+        res = scipy.optimize.minimize(
+            obj_func,
+            initial_theta,
+            method="L-BFGS-B",
+            jac=True,
+            bounds=bounds,
+            options={"maxiter": 50000},
         )
         return res.x, res.fun
 

@@ -24,11 +24,11 @@ class PhotometryObs(Observation):
     magnitude: Optional[float] = field(default=None)
     flux: Optional[float] = field(default=None)
     e_flux: Optional[float] = field(default=np.nan, init=False)
-    e_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
-    e_lower_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
-    e_upper_magnitude: Optional[float] = field(default=None, validator=validators.optional(validators.ge(0)))
+    e_magnitude: Optional[float] = field(default=0, validator=validators.ge(0))
+    e_lower_magnitude: Optional[float] = field(default=0, validator=validators.optional(validators.ge(0)))
+    e_upper_magnitude: Optional[float] = field(default=0, validator=validators.optional(validators.ge(0)))
     zeropoint: Optional[float] = field(default=None)
-    band: Optional[str] = field(default=None, validator=validators.instance_of(str))
+    band: Optional[str] = field(default=None) # TODO: make required
     bandset: Optional[str] = field(default=None) # TODO: handle differences between band set systems (e.g.: AB vs UBVRI vs VEGA)
     system: Optional[str] = field(default=None)
     upperlimit: Optional[bool] = field(default=False)
@@ -57,7 +57,7 @@ class PhotometryObs(Observation):
         elif self.magnitude is None and self.flux is not None:
             self.magnitude = self._magnitude_from_flux(self.flux, self.zeropoint)
 
-        self._init_errors()
+        # self._init_errors() # TODO: reenable
 
     @staticmethod
     def _flux_from_magnitude(mag: float, zp: float) -> float:
@@ -78,12 +78,8 @@ class PhotometryObs(Observation):
             self.e_flux = 0.4 * np.log(10) * self.flux * self.e_magnitude
             if not np.isfinite(self.e_flux):
                 raise ValueError("e_flux is not finite")
-        else:
-            self.e_magnitude = np.nan
-            self.e_lower_magnitude = np.nan
-            self.e_upper_magnitude = np.nan
 
-import cattrs
 
-cattrs.structure({"source": "a", "time": 1, "magnitude": 1, "band": "V"}, PhotometryObs)
+# cattrs.structure({"source": "a", "time": 1, "magnitude": 1}, PhotometryObs)
+# cattrs.structure({"source": "a", "time": 1, "magnitude": 1, "band": "V"}, PhotometryObs)
 
