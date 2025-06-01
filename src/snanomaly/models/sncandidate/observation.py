@@ -2,7 +2,6 @@ from typing import Any, Optional
 
 import numpy as np
 from attrs import define, field
-from attrs.converters import optional
 
 
 def validate_not_true(instance: Any, attribute: Any, value: Any) -> None:
@@ -29,8 +28,8 @@ class Observation:
     """
 
     source: str = field()
-    time: float = field(
-        converter=optional(lambda x: np.mean([float(t) for t in x]) if isinstance(x, list) else float(x)),
+    time: float | list[float] = field(
+        converter=lambda x: np.mean([float(t) for t in x]) if isinstance(x, list) else float(x),
     )
     e_time: Optional[float] = field(default=np.nan, validator=validate_non_negative_finite_or_nan)
     e_lower_time: Optional[float] = field(default=np.nan)
@@ -47,3 +46,4 @@ class Observation:
     includeshost: Optional[bool] = field(default=None)
     model: Optional[str] = field(default=None, validator=validate_must_be_none)
     realization: Optional[int] = field(default=None, validator=validate_must_be_none)
+

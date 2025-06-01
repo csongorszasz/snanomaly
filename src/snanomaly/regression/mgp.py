@@ -22,6 +22,7 @@ from snanomaly.models.sncandidate.bands import BandEnum, Bands
 from snanomaly.regression.exception import (
     BandNotFoundError,
     CouldNotConvergeError,
+    FixedLengthScaleNotSetError,
     PeakTimeNotSetError,
     PredictionIntervalOutOfBoundsError,
 )
@@ -112,6 +113,8 @@ class MGPInterpolator:
     normalize_y: bool = field(default=False)
     kernel: Kernel = field(default=RBF)
     length_scale_min_bounds: tuple[float, float] = field(default=(0, np.inf))
+    fixed_length_scale: float = field(default=None)
+    three_sigmas: dict = field(default=None)
     optimize_method: Optimizer = field(default=Optimizer.L_BFGS_B)
     random_state: int = field(default=None)
     peak_time: float = field(init=False, default=None)
@@ -146,26 +149,25 @@ class MGPInterpolator:
             LengthScaleBoundsInitStrategy.STATIC.value: self._init_regressor_static_length_scale_bounds,
             LengthScaleBoundsInitStrategy.DYNAMIC_SET_ONCE.value: self._init_regressor_dynamic_length_scale_bounds_set_once,
             LengthScaleBoundsInitStrategy.DYNAMIC_BIN_SEARCH.value: self._init_regressor_dynamic_length_scale_bounds_binary_search,
-
-            ####################################################
-            # TODO: 3-SIGMA szabaly a length scale beallitasahoz
-            ####################################################
-            # channel-enkent kiszamolni a 3sigma szorast
-            # -> az RBF kernel length scale parameteret beallitani 3*sigmara (megjegyzes: a length scale az adatok 99.7%-ara illeszkednie kell)
-            # az OSSZES szupernova menten
-            # ? van-e hiperparameter tuning alapertelmezetten
         }
         return strategies[self.length_scale_bounds_init_strategy.value]()
 
     def _init_regressor_static_length_scale_bounds(self) -> GaussianProcessRegressor:
-        kernels = [self.kernel(length_scale_bounds=(self.length_scale_min_bounds[0], 1e4)) for _ in range(self.nr_bands)]
-        # kernels = [self.kernel(length_scale=1e-7) for _ in range(self.nr_bands)]
+        # kernels = [self.kernel(length_scale_bounds=(self.length_scale_min_bounds[0], 1e4)) for _ in range(self.nr_bands)]
+        if self.three_sigmas is None and self.fixed_length_scale is None:
+            raise FixedLengthScaleNotSetError("Must provide 3-sigma values for each band or a fixed length-scale.")
+        length_scales = []
+        if self.fixed_length_scale:
+            length_scales = [self.fixed_length_scale] * self.nr_bands
+        elif self.three_sigmas:
+            length_scales = [self.three_sigmas[self.bandset.value[idx]] for idx in range(self.nr_bands)]
+        # logger.info(f"Length-scales: {length_scales}")
+        kernels = [self.kernel(length_scale=length_scales[idx], length_scale_bounds="fixed") for idx in range(self.nr_bands)]
         regressor = self.construct_regressor(kernels=kernels)
         regressor, kernel_idx = self.fit_regressor(regressor=regressor)
         if kernel_idx is not None:
             raise CouldNotConvergeError(
-                f"Could not converge for kernel {kernel_idx} with length-scale lower bound "
-                f"{self.length_scale_min_bounds[0]}, , length-scale: {regressor.kernel_.state_kernels[kernel_idx].length_scale_bounds[0]}",
+                f"Could not converge for kernel {kernel_idx} with length-scale {length_scales[kernel_idx]}",
             )
         return regressor
 

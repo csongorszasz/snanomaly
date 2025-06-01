@@ -12,3 +12,6 @@ class PeakTimeNotSetError(RegressionError):
 
 class CouldNotConvergeError(RegressionError):
     pass
+
+class FixedLengthScaleNotSetError(RegressionError):
+    pass
