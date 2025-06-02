@@ -21,6 +21,7 @@ dependencies = [
     "loguru",
     "tqdm",
     "gp-multistate-kernel",
+    "click"
 ]
 
 [project.optional-dependencies]
@@ -37,6 +38,7 @@ Repository = "https://github.com/csongorszasz/snanomaly"
 
 [project.scripts]
 lint = "snanomaly.scripts.lint:main"
+cli = "snanomaly.cli.cli:cli"
 
 [tool.pytest]
 testpaths = ["tests"]

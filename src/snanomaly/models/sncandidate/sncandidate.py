@@ -50,4 +50,11 @@ class SNCandidate:
     spectra: Spectra = field(factory=list)
 
     def __repr__(self):
-        return f"SNCandidate(name={self.name}, alias={self.alias})"
+        lines = []
+        lines.append(f"> Name: {self.name}")
+        lines.append(f"> Alias: {self.alias}")
+        lines.append(f"> Photometry: {"YES" if self.photometry is not None else "NO"}")
+        if self.photometry:
+            lines.append(self.photometry.__repr__())
+        lines.append(f"> Spectra: {"YES" if self.spectra is not None else "NO"}")
+        return "\n".join(lines)

@@ -102,3 +102,9 @@ class Bands:
 
     def add_to_available_bandsets(self, bandset: Bandset):
         self._available_bandsets.add(bandset)
+
+    def __repr__(self):
+        val = ""
+        for b in self.get_bands():
+            val += f"{b.name}:\t{b.nr_observations} observations\n"
+        return val[:-1] if val else val
