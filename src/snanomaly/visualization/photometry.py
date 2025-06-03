@@ -42,6 +42,7 @@ class PlotPhotometry:
     def _add_band_to_figure(self, band: Band):
         color = self._get_band_color(band)
 
+        # plot observation data points
         self.figure.add_trace(
             go.Scatter(
                 mode="markers",
@@ -51,8 +52,8 @@ class PlotPhotometry:
                     "size": 5,
                     "line": {"width": 0.25, "color": "black"},
                 },
-                x=band.time,
-                y=band.flux,
+                x=band.time[~band.upperlimit],
+                y=band.flux[~band.upperlimit],
                 error_y={
                     "type": "data",
                     "array": band.e_flux,
@@ -61,6 +62,23 @@ class PlotPhotometry:
                     "thickness": 1.5,
                 },
                 name=band.name,
+                hoverinfo="text",
+            ),
+        )
+
+        # plot upper limits
+        self.figure.add_trace(
+            go.Scatter(
+                mode="markers",
+                marker={
+                    "symbol": "triangle-down",
+                    "color": color,
+                    "size": 5,
+                    "line": {"width": 0.25, "color": "black"},
+                },
+                x=band.time[band.upperlimit],
+                y=band.flux[band.upperlimit],
+                name=f"{band.name} (upper limit)",
                 hoverinfo="text",
             ),
         )
