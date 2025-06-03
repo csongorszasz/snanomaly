@@ -57,7 +57,7 @@ class PhotometryObs(Observation):
         elif self.magnitude is None and self.flux is not None:
             self.magnitude = self._magnitude_from_flux(self.flux, self.zeropoint)
 
-        # self._init_errors() # TODO: reenable
+        self._init_errors()
 
     @staticmethod
     def _flux_from_magnitude(mag: float, zp: float) -> float:
@@ -68,13 +68,13 @@ class PhotometryObs(Observation):
         return -2.5 * np.log10(flux / zp)
 
     def _init_errors(self):
-        if not np.isnan(self.e_lower_magnitude) and not np.isnan(self.e_upper_magnitude):
+        if not np.isclose(self.e_lower_magnitude, 0) and not np.isclose(self.e_upper_magnitude, 0):
             e_lower_flux = self._flux_from_magnitude(self.magnitude + self.e_lower_magnitude, self.zeropoint)
             e_upper_flux = self._flux_from_magnitude(self.magnitude - self.e_upper_magnitude, self.zeropoint)
             self.e_flux = 0.5 * (e_upper_flux - e_lower_flux)
             if not np.isfinite(self.e_flux):
                 raise ValueError("e_flux is not finite")
-        elif not np.isnan(self.e_magnitude):
+        elif not np.isclose(self.e_magnitude, 0):
             self.e_flux = 0.4 * np.log(10) * self.flux * self.e_magnitude
             if not np.isfinite(self.e_flux):
                 raise ValueError("e_flux is not finite")

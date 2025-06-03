@@ -1,58 +1,67 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from attrs import define, field
 from plotly import graph_objects as go
 
 from snanomaly.models.sncandidate.band import Band
+from snanomaly.models.sncandidate.bands import BandEnum
+from snanomaly.models.sncandidate.photometry import Photometry
 from snanomaly.visualization.enums import Color
-
-
-@define
-class Bandset:
-    """Group `Band` instance references to create a bandset."""
-
-    band_references: list[Band] = field(factory=list)
+from snanomaly.visualization.figlayout import FigLayout
 
 
 @define
 class PlotPhotometry:
+    photometry: Photometry = field()
+    title: str = field(factory=str)
     figure: go.Figure = field(factory=go.Figure)
 
     def __attrs_post_init__(self):
-        # set axis labels
-        self.figure.update_layout(
-            xaxis={"exponentformat": "none"},
-            yaxis={"exponentformat": "power", "showexponent": "all"},
-        )
-        self.figure.update_xaxes(title_text="MJD (Modified Julian Date)", minor={"showgrid": True, "ticks": "inside"})
-        self.figure.update_yaxes(title_text=r"$Flux (\text{erg}\,\text{s}^{-1}\,\text{Hz}^{-1}\,\text{cm}^{-1})$", minor={"showgrid": True, "ticks": "inside"})
-        # self.figure.update_yaxes(title_text="Flux (erg s^(-1) Hz^(-1) cm^(-1))", minor={"showgrid": True, "ticks": "inside"})
+        self.figure.update_layout(FigLayout.light_curves())
+
+        self.set_bands()
+        self.set_title(self.title)
 
     def set_title(self, title: str):
         self.figure.update_layout(title={"text": title, "x": 0.5})
 
-    def set_bands(self, bandsets: list[Bandset]):
+    def set_bands(self, band_names: Optional[list[BandEnum]] = None):
         self._clear_figure()
-        for bandset in bandsets:
-            for band in bandset.band_references:
-                self._add_band_to_figure(band)
+        if band_names:
+            for band_name in band_names:
+                band = self.photometry.bands.get_band(band_name)
+                if band:
+                    self._add_band_to_figure(band)
+        else:
+            for band in self.photometry.bands.get_bands():
+                if band.nr_observations > 0:
+                    self._add_band_to_figure(band)
 
     def _add_band_to_figure(self, band: Band):
-        # color = self._get_band_color(band)
+        color = self._get_band_color(band)
 
-        # Create a scatter plot for the band data
         self.figure.add_trace(
             go.Scatter(
                 mode="markers",
-                marker={"symbol": "circle", "line_width": 1, "size": 5},
+                marker={
+                    "symbol": "circle",
+                    "color": color,
+                    "size": 5,
+                    "line": {"width": 0.25, "color": "black"},
+                },
                 x=band.time,
                 y=band.flux,
                 error_y={
                     "type": "data",
                     "array": band.e_flux,
                     "visible": True,
+                    "color": color, # Match error bar color with marker color
+                    "thickness": 1.5,
                 },
                 name=band.name,
+                hoverinfo="text",
             ),
         )
 
@@ -61,15 +70,12 @@ class PlotPhotometry:
         self.figure.data = []
 
     def _get_band_color(self, band: Band):
-        try:
-            return Color[band.name].value
-        except (KeyError, AttributeError):
-            return "gray"
+        return Color[band.name].value
 
     def show(self, width: int = 600, height: int = 600):
         self.figure.update_layout(
             width=width, height=height,
         )
-        self.figure.show()
+        self.figure.show(renderer="browser")
 
-__all__ = ["Bandset", "PlotPhotometry"]
+__all__ = ["PlotPhotometry"]

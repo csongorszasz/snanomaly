@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from enum import Enum
 
+from plotly.colors import qualitative
+
 
 class Color(Enum):
     B = "blue"
@@ -10,6 +12,6 @@ class Color(Enum):
     g = "green"
     r = "red"
     i = "brown"
-    g_pr = "green"
-    r_pr = "red"
-    i_pr = "brown"
+    g_pr = qualitative.Pastel[6]
+    r_pr = qualitative.Pastel[7]
+    i_pr = qualitative.Pastel[8]

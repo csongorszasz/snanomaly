@@ -10,3 +10,6 @@ class StringDatum(Datum):
     """
 
     value: str = field(default=None)
+
+    def __repr__(self):
+        return self.value

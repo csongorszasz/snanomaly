@@ -53,6 +53,7 @@ class SNCandidate:
         lines = []
         lines.append(f"> Name: {self.name}")
         lines.append(f"> Alias: {self.alias}")
+        lines.append(f"> Claimed type: {self.claimedtype if self.claimedtype else "UNKNOWN"}")
         lines.append(f"> Photometry: {"YES" if self.photometry is not None else "NO"}")
         if self.photometry:
             lines.append(self.photometry.__repr__())

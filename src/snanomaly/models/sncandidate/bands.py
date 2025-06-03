@@ -12,6 +12,9 @@ class Bandset(Enum):
     gri = ("g", "r", "i")
     gri_primed = ("g_pr", "r_pr", "i_pr")
 
+    def __str__(self):
+        return f"({",".join(self.value)})"
+
     @classmethod
     def _missing_(cls, value):
         # Convert list to tuple if needed
@@ -66,6 +69,9 @@ class Bands:
 
     _available_bandsets: set[Bandset] = field(factory=set, init=False)
 
+    def get_band(self, band_name: BandEnum | str) -> Band:
+        return getattr(self, str(band_name))
+
     def get_bands(self, bandset: Optional[Bandset] = None) -> list[Band]:
         """
         Returns a list of all bands in the collection.
@@ -98,6 +104,16 @@ class Bands:
 
     @property
     def available_bandsets(self) -> set[Bandset]:
+        if self._available_bandsets:
+            return self._available_bandsets
+        for bs in Bandset:
+            bs_ok = True
+            for band in self.get_bands(bs):
+                if band.nr_observations == 0:
+                    bs_ok = False
+                    break
+            if bs_ok:
+                self.add_to_available_bandsets(bs)
         return self._available_bandsets
 
     def add_to_available_bandsets(self, bandset: Bandset):
@@ -105,6 +121,14 @@ class Bands:
 
     def __repr__(self):
         val = ""
+
+        val += "Available band sets: "
+        for bs in self.available_bandsets:
+            val += f"{bs.__str__()} "
+        if not self.available_bandsets:
+            val += "NONE"
+        val += "\n"
+
         for b in self.get_bands():
             val += f"{b.name}:\t{b.nr_observations} observations\n"
         return val[:-1] if val else val

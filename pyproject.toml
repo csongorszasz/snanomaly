@@ -15,6 +15,7 @@ dependencies = [
     "scikit-learn",
     "umap-learn",
     "plotly",
+    "kaleido",
     "polars",
     "attrs",
     "cattrs",
