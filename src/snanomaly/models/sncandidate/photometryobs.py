@@ -50,8 +50,6 @@ class PhotometryObs(Observation):
             - convert flux density to flux
 
         """
-        if self.zeropoint is None:
-            self.zeropoint = 1  # standard flux for convenience (not physically meaningful) # TODO: fact check
         if self.magnitude is not None and self.flux is None:
             self.flux = self._flux_from_magnitude(self.magnitude, self.zeropoint)
         elif self.magnitude is None and self.flux is not None:
@@ -61,11 +59,17 @@ class PhotometryObs(Observation):
 
     @staticmethod
     def _flux_from_magnitude(mag: float, zp: float) -> float:
-        return zp * 10 ** (-0.4 * mag)
+        # TODO
+        #   calibrated_mag = mag - zp
+        #   return 10 ** (-0.4 * calibrated_mag)
+        return 10 ** (-0.4 * mag)
 
     @staticmethod
     def _magnitude_from_flux(flux: float, zp: float) -> float:
-        return -2.5 * np.log10(flux / zp)
+        # TODO
+        #   calibrated_mag = -2.5 * np.log10(flux)
+        #   return calibrated_mag + zp
+        return -2.5 * np.log10(flux)
 
     def _init_errors(self):
         if not np.isclose(self.e_lower_magnitude, 0) and not np.isclose(self.e_upper_magnitude, 0):
@@ -78,8 +82,3 @@ class PhotometryObs(Observation):
             self.e_flux = 0.4 * np.log(10) * self.flux * self.e_magnitude
             if not np.isfinite(self.e_flux):
                 raise ValueError("e_flux is not finite")
-
-
-# cattrs.structure({"source": "a", "time": 1, "magnitude": 1}, PhotometryObs)
-# cattrs.structure({"source": "a", "time": 1, "magnitude": 1, "band": "V"}, PhotometryObs)
-
