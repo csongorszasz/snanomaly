@@ -6,3 +6,6 @@ class PeakTimeNotSetError(InterpolationError):
 
 class BandNotFoundError(InterpolationError):
     pass
+
+class NegativePeakIndexError(InterpolationError):
+    pass

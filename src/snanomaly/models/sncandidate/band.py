@@ -1,6 +1,7 @@
 import attrs
 import numpy as np
 from attrs import define, field
+from loguru import logger
 
 
 @define(repr=False)
@@ -16,6 +17,8 @@ class Band:
     e_flux: np.array = field(default=np.array([], dtype=np.float64))
     upperlimit: np.array = field(default=np.array([], dtype=bool))
     _is_binned = field(default=False)
+    _is_normalized = field(default=False)
+    _norm_factor = field(default=None)
 
     @property
     def matrix(self):
@@ -50,12 +53,50 @@ class Band:
     def is_binned(self, value: bool):
         self._is_binned = value
 
+    @property
+    def norm_factor(self):
+        return self._norm_factor
+
+    @norm_factor.setter
+    def norm_factor(self, value: float):
+        self._norm_factor = value
+
     @classmethod
     def get_public_field_names(cls):
         """
         Returns a list of all public field names in the Band class.
         """
         return [field.name for field in attrs.fields(cls) if not field.name.startswith("_")]
+
+    def normalize(self):
+        """
+        Normalizes the flux and error in flux of the band.
+        """
+        if self.flux.size == 0:
+            logger.warning("Band has no flux data to normalize.")
+            return
+
+        max_flux = np.max(self.flux)
+        if max_flux == 0:
+            logger.warning("Band has zero (0) maximum flux, normalization skipped.")
+            return
+
+        self._norm_factor = max_flux
+        self.flux /= max_flux
+        self.e_flux /= max_flux
+        self._is_normalized = True
+
+    def denormalize(self):
+        """
+        Denormalizes the flux and error in flux of the band.
+        """
+        if not self._is_normalized or self._norm_factor is None:
+            logger.warning("Band is not normalized or normalization factor is not set.")
+            return
+
+        self.flux *= self._norm_factor
+        self.e_flux *= self._norm_factor
+        self._is_normalized = False
 
     def binned(self, bin_width: int, discrete_time: bool = True):
         """
