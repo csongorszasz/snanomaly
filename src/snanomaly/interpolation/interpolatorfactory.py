@@ -3,17 +3,19 @@ import os
 import numpy as np
 from scipy.interpolate import BSpline, interp1d, make_interp_spline
 
+from snanomaly.interpolation.names import Method
+
 
 class InterpolatorFactory:
     TYPES = (
-        "linear",
-        "bspline",
+        Method.LINEAR.value,
+        Method.BSPLINE.value,
     )
 
     def __new__(cls, x: np.ndarray, y: np.ndarray, interpolator_type: str, **kwargs):
         interpolator = {
-            "linear": cls._linear,
-            "bspline": cls._bspline,
+            cls.TYPES[0]: cls._linear,
+            cls.TYPES[1]: cls._bspline,
         }
         return interpolator[interpolator_type](x=x, y=y, **kwargs)
 

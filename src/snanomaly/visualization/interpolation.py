@@ -33,8 +33,11 @@ class PlotInterpolation:
                                                               self.int_result.days_pre_peak,
                                                               self.int_result.days_post_peak)
 
-    def set_title(self, title: str):
-        self.figure.update_layout(title={"text": title, "x": 0.5})
+    def set_title(self, text: str):
+        self.figure.update_layout(title={"text": text, "x": 0.5})
+
+    def set_subtitle(self, text: str):
+        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray"}})
 
     def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()
@@ -58,7 +61,7 @@ class PlotInterpolation:
                     x=band.time[~band.upperlimit],
                     y=band.flux[~band.upperlimit],
                     mode="markers",
-                    name=f"Band: {band.name} (observation)",
+                    name=f"Band: {band.name.replace("_pr", "'")} (observation)",
                     marker={"color": color, "symbol": "x"},
                     error_y={
                         "type": "data",
@@ -82,7 +85,7 @@ class PlotInterpolation:
                     },
                     x=band.time[band.upperlimit],
                     y=band.flux[band.upperlimit],
-                    name=f"{band.name} (upper limit)",
+                    name=f"{band.name.replace("_pr", "'")} (upper limit)",
                     hoverinfo="text",
                 ),
             )
@@ -95,7 +98,7 @@ class PlotInterpolation:
                 x=pred_x,
                 y=y,
                 mode="lines",
-                name=f"Band: {band.name} (interpolation)",
+                name=f"Band: {band.name.replace("_pr", "'")} (interpolation)",
                 line={"color": color},
             ))
 

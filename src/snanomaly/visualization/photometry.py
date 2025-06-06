@@ -61,7 +61,7 @@ class PlotPhotometry:
                     "color": color, # Match error bar color with marker color
                     "thickness": 1.5,
                 },
-                name=band.name,
+                name=band.name.replace("_pr", "'"),
                 hoverinfo="text",
             ),
         )
@@ -78,7 +78,7 @@ class PlotPhotometry:
                 },
                 x=band.time[band.upperlimit],
                 y=band.flux[band.upperlimit],
-                name=f"{band.name} (upper limit)",
+                name=f"{band.name.replace("_pr", "'")} (upper limit)",
                 hoverinfo="text",
             ),
         )

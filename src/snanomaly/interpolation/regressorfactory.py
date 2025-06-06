@@ -1,27 +1,27 @@
-
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.kernel_ridge import KernelRidge
 
+from snanomaly.interpolation.names import Method
 from snanomaly.models.sncandidate.band import Band
 from snanomaly.regression.mgp import MGPInterpolator
 
 
 class RegressorFactory:
     TYPES = (
-        "kernel_ridge",
-        "grad_boost",
-        "gauss",
-        "multigauss",
+        Method.GAUSS_UNI.value,
+        Method.GAUSS_MULTI.value,
+        Method.KERNEL_RIDGE.value,
+        Method.GRADIENT_BOOST.value,
     )
 
     def __new__(cls, regressor_type: str, band: Band = None, **kwargs):
         regressor = {
-            "kernel_ridge": cls._krr,
-            "grad_boost": cls._gbr,
-            "gauss": cls._gpr,
-            "multigauss": cls._multigpr,
+            cls.TYPES[0]: cls._gpr_uni,
+            cls.TYPES[1]: cls._gpr_multi,
+            cls.TYPES[2]: cls._krr,
+            cls.TYPES[3]: cls._gbr,
         }
         return regressor[regressor_type](band=band, **kwargs)
 
@@ -53,7 +53,7 @@ class RegressorFactory:
         return GradientBoostingRegressor(**kwargs)
 
     @classmethod
-    def _gpr(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
+    def _gpr_uni(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
         if "kernel" not in kwargs:
             kwargs["kernel"] = RBF(length_scale_bounds=(1, 30))
         if "alpha" not in kwargs and band:
@@ -65,5 +65,5 @@ class RegressorFactory:
         return GaussianProcessRegressor(**kwargs)
 
     @classmethod
-    def _multigpr(cls, band: Band = None, **kwargs) -> MGPInterpolator:
+    def _gpr_multi(cls, band: Band = None, **kwargs) -> MGPInterpolator:
         raise NotImplementedError

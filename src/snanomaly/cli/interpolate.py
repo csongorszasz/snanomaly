@@ -8,6 +8,7 @@ from snanomaly.dataset.exception import DataPointNotFoundError
 from snanomaly.dataset.factory import OSCFactory
 from snanomaly.interpolation.baseinterpolator import BaseInterpolator
 from snanomaly.interpolation.interpolatorfactory import InterpolatorFactory
+from snanomaly.interpolation.names import Method, get_display_name
 from snanomaly.interpolation.regressioninterpolator import RegressionInterpolator
 from snanomaly.interpolation.regressorfactory import RegressorFactory
 from snanomaly.interpolation.simpleinterpolator import SimpleInterpolator
@@ -38,32 +39,48 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tup
                 stds=list(stds.values()) if stds else None,
             ),
     )
-    if isinstance(interpolator, SimpleInterpolator):
-        title = f"{sn.name} - {bandset.__str__()} - {interpolator.kind} interpolation"
-    elif isinstance(interpolator, RegressionInterpolator):
-        title = f"{sn.name} - {bandset.__str__()} - {interpolator.kind} regression"
-    else:
-        raise ValueError(f"Unknown interpolator type: {type(interpolator)}")
-    plotter.set_title(title)
+    plotter.set_title(sn.name)
+    plotter.set_subtitle(get_display_name(interpolator.kind))
     plotter.show(600, 600)
 
 @interpolate.command()
 @click.argument("sn_name", required=True)
-@click.option("-r", "--regression-only", is_flag=True, default=False, help="Only run regression-based interpolators.")
-@click.option("-s", "--simple-interpolation-only", is_flag=True, default=False, help="Only run simple interpolators.")
+@click.option("--linear", is_flag=True, default=False, help="Only run linear interpolation.")
+@click.option("--bspline", is_flag=True, default=False, help="Only run B-spline interpolation.")
+@click.option("--gauss-uni", is_flag=True, default=False, help="Only run univariate (one kernel) Gaussian Process Regression for interpolation.")
+@click.option("--gauss-multi", is_flag=True, default=False, help="Only run multivariate (multiple kernels) Gaussian Process Regression for interpolation.")
+@click.option("--kernel-ridge", is_flag=True, default=False, help="Only run Kernel Ridge Regression for interpolation.")
+@click.option("--grad-boost", is_flag=True, default=False, help="Only run Gradient Boosting Regression for interpolation.")
+@click.option("--bspline-k", default=3, type=int, help="B-spline degree.")
 @click.option("--stop-after-first", is_flag=True, default=False, help="Stop after the first interpolation is run.")
-@click.option("--bspline-k", default=3, type=int, help="B-spline degree for simple interpolation.")
-def one(sn_name: str, regression_only: bool, simple_interpolation_only: bool, stop_after_first: bool,
-        bspline_k: int):
-    if regression_only and simple_interpolation_only:
-        click.echo("Error: Cannot use both --regression-only and --simple-interpolation-only at the same time.")
+def one(
+    sn_name: str,
+    linear: bool,
+    bspline: bool,
+    gauss_uni: bool,
+    gauss_multi: bool,
+    kernel_ridge: bool,
+    grad_boost: bool,
+    bspline_k: int,
+    stop_after_first: bool,
+):
+    method_flags = {
+        Method.LINEAR.value: linear,
+        Method.BSPLINE.value: bspline,
+        Method.GAUSS_UNI.value: gauss_uni,
+        Method.GAUSS_MULTI.value: gauss_multi,
+        Method.KERNEL_RIDGE.value: kernel_ridge,
+        Method.GRADIENT_BOOST.value: grad_boost,
+    }
+
+    if not any(method_flags.values()):
+        click.echo("Warning: No interpolation methods selected. Specify at least one of the flags.")
         return
 
     interpolators_to_iterate = (
-        (SimpleInterpolator, InterpolatorFactory.TYPES) if not regression_only else None,
-        (RegressionInterpolator, RegressorFactory.TYPES) if not simple_interpolation_only else None,
+        (SimpleInterpolator, InterpolatorFactory.TYPES),
+        (RegressionInterpolator, RegressorFactory.TYPES),
     )
-    interpolators_to_iterate = list(filter(lambda x: x is not None, interpolators_to_iterate))
 
     os.environ["BSPLINE_K"] = str(bspline_k)
 
@@ -80,6 +97,9 @@ def one(sn_name: str, regression_only: bool, simple_interpolation_only: bool, st
             peak_band = BandEnum[bs.value[1]]
             for interpolator_class, kinds in interpolators_to_iterate:
                 for kind in kinds:
+                    if not method_flags[kind]:
+                        continue
+
                     click.echo(f"bandset={bs.__str__()} interpolator_class={interpolator_class.__name__} method={kind}")
                     interpolator: BaseInterpolator = interpolator_class(
                         sn_name=sn_name, bandset=bs, bands=sn_obj.photometry.bands, peak_band=peak_band, kind=kind,

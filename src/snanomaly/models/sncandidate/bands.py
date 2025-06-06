@@ -13,7 +13,7 @@ class Bandset(Enum):
     gri_primed = ("g_pr", "r_pr", "i_pr")
 
     def __str__(self):
-        return f"({",".join(self.value)})"
+        return f"{"".join(self.value).replace("_pr", "'")}"
 
     @classmethod
     def _missing_(cls, value):
