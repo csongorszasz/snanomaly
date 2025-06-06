@@ -3,15 +3,15 @@
 - ~~understand how cattrs structure hooks work~~
 - ~~setup logging correctly~~ 
 - ~~fix parsing issues that are fixable~~
-- validate objects for adherence to requirements before passing them on
+- ~~validate objects for adherence to requirements before passing them on~~
   - ~~has photometric data~~ 
   - ~~minimum 3 photometric observations per band with 3-day binning~~
 
-- binned curve plotting
+- ~~binned curve plotting~~
   - ~~plot binned dots~~ 
-  - get LaTeX to work in plots
+  - ~~get LaTeX to work in plots~~
 
-- band transformation
+- ~~band transformation~~
 
 - create unit tests for the models
 - create unit tests for parsing complex objects (.json)
@@ -21,25 +21,30 @@
 
 ### Photometry Lightcurve Reconstruction - Regression
 - lightcurve reconstruction with:
-  - Gaussian Processes
-  - Kernel Ridge Regression
+  - ~~Gaussian Processes~~
+  - ~~Kernel Ridge Regression~~
   - Support Vector Machines
   - Gradient Boosting Regression
-- visualization of reconstructed lightcurves
-  - error bars for ground truth data points
+- ~~visualization of reconstructed lightcurves~~
+  - ~~error bars for ground truth data points~~
 
 ### Dimensionality Reduction
 - dimensionality reduction with:
-  - t-SNE
+  - ~~t-SNE~~
   - PCA
   - UMAP
   - LLE
 - visualization of reduced data
 
 ### Outlier detection
-- outlier detection with: 
-  - Gaussian Processes
-  - Isolation Forest
+- outlier detection with:
+  - ~~Isolation Forest~~
   - One-Class SVM
   - Neural Networks
 - visualization of outliers
+
+
+### Possibilities for improvement
+1. Handle upper limits differently from normal observations
+2. Handle differences between band set systems in photometry data (e.g.: AB vs UBVRI vs VEGA)
+3. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)

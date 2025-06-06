@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+import numpy as np
 import plotly.graph_objects as go
 from attrs import define, field
 
@@ -11,6 +12,7 @@ from snanomaly.models.sncandidate.band import Band
 from snanomaly.models.sncandidate.bands import BandEnum, Bands
 from snanomaly.visualization.enums import Color
 from snanomaly.visualization.figlayout import FigLayout
+from snanomaly.visualization.util import color_to_rgba
 
 
 @define
@@ -47,6 +49,7 @@ class PlotInterpolation:
         gnd_truth = True
         upper_limits = True
         interpolation_result = True
+        stds = True
 
         # ground truth
         if gnd_truth:
@@ -95,6 +98,28 @@ class PlotInterpolation:
                 name=f"Band: {band.name} (interpolation)",
                 line={"color": color},
             ))
+
+            # uncertainty (creating a closed polygon shape for the confidence interval bands)
+            if stds and self.int_result.stds:
+                band_index = BaseInterpolator.get_band_index(BandEnum(band.name), self.int_result.bandset)
+                y = self.int_result.preds[band_index]
+                std = self.int_result.stds[band_index]
+                self.figure.add_trace(
+                    go.Scatter(
+                        x=np.concatenate([pred_x, pred_x[::-1]]),
+                        y=np.concatenate(
+                            [
+                                y + std,
+                                (y - std)[::-1],
+                            ],
+                        ),
+                        fill="toself",  # complete path is required
+                        fillcolor=color_to_rgba(color, 0.2),
+                        line={"color": "rgba(255, 255, 255, 0)"},
+                        showlegend=False,
+                        hoverinfo="skip",
+                    ),
+                )
 
     def _clear_figure(self):
         # Clear all traces from the figure

@@ -1,6 +1,7 @@
 import numpy as np
 from attrs import define, field
 from sklearn.base import RegressorMixin
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 from snanomaly.interpolation.baseinterpolator import BaseInterpolator
 from snanomaly.interpolation.regressorfactory import RegressorFactory
@@ -38,9 +39,16 @@ class RegressionInterpolator(BaseInterpolator):
             prediction_interval_from_peak[1] - prediction_interval_from_peak[0] + 1,
         )
         preds = {}
+        stds = {}
         for band in self.bands_binned:
-            pred = self.regressors[band.name].predict(x)
+            regressor = self.regressors[band.name]
+            if isinstance(regressor, GaussianProcessRegressor):
+                pred, std = regressor.predict(x, return_std=True)
+                std = std * band.norm_factor if band.norm_factor else std  # denormalize
+                stds[band.name] = std
+            else:
+                pred = regressor.predict(x)
             pred = self.y_negative_to_zero_until_infinity(peak_idx=-prediction_interval_from_peak[0], y=pred)
             pred = pred * band.norm_factor if band.norm_factor else pred  # denormalize
             preds[band.name] = pred
-        return preds
+        return preds, stds

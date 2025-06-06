@@ -21,7 +21,11 @@ from snanomaly.visualization.interpolation import PlotInterpolation
 def interpolate():
     pass
 
-def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict, interpolator: BaseInterpolator):
+def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tuple[dict, dict],
+                      interpolator: BaseInterpolator):
+    stds = None
+    if isinstance(predictions, tuple):
+        predictions, stds = predictions[0], predictions[1]
     plotter = PlotInterpolation(
         original_bands=sn.photometry.bands,
         int_result=InterpolationResult(
@@ -31,6 +35,7 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict, inte
                 days_pre_peak=20,
                 days_post_peak=100,
                 preds=list(predictions.values()),
+                stds=list(stds.values()) if stds else None,
             ),
     )
     if isinstance(interpolator, SimpleInterpolator):
@@ -76,10 +81,10 @@ def one(sn_name: str, regression_only: bool, simple_interpolation_only: bool, st
             for interpolator_class, kinds in interpolators_to_iterate:
                 for kind in kinds:
                     click.echo(f"bandset={bs.__str__()} interpolator_class={interpolator_class.__name__} method={kind}")
-                    interpolator = interpolator_class(
+                    interpolator: BaseInterpolator = interpolator_class(
                         sn_name=sn_name, bandset=bs, bands=sn_obj.photometry.bands, peak_band=peak_band, kind=kind,
                     )
-                    preds: dict = interpolator.predict_from_peak((-20, 100))
+                    preds = interpolator.predict_from_peak((-20, 100))
                     _plot_predictions(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
 
                     if stop_after_first:

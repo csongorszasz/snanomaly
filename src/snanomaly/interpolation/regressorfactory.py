@@ -5,6 +5,7 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.kernel_ridge import KernelRidge
 
 from snanomaly.models.sncandidate.band import Band
+from snanomaly.regression.mgp import MGPInterpolator
 
 
 class RegressorFactory:
@@ -42,9 +43,9 @@ class RegressorFactory:
     @classmethod
     def _gbr(cls, band: Band = None, **kwargs) -> GradientBoostingRegressor:
         if "n_estimators" not in kwargs:
-            kwargs["n_estimators"] = 200
+            kwargs["n_estimators"] = 500
         if "max_depth" not in kwargs:
-            kwargs["max_depth"] = 4
+            kwargs["max_depth"] = 5
         if "learning_rate" not in kwargs:
             kwargs["learning_rate"] = 0.1
         if "random_state" not in kwargs:
@@ -54,7 +55,7 @@ class RegressorFactory:
     @classmethod
     def _gpr(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
         if "kernel" not in kwargs:
-            kwargs["kernel"] = RBF(length_scale=1, length_scale_bounds="fixed")
+            kwargs["kernel"] = RBF(length_scale_bounds=(1, 30))
         if "alpha" not in kwargs and band:
             kwargs["alpha"] = band.e_flux
         if "n_restarts_optimizer" not in kwargs:
@@ -64,5 +65,5 @@ class RegressorFactory:
         return GaussianProcessRegressor(**kwargs)
 
     @classmethod
-    def _multigpr(cls, band: Band = None, **kwargs):
+    def _multigpr(cls, band: Band = None, **kwargs) -> MGPInterpolator:
         raise NotImplementedError

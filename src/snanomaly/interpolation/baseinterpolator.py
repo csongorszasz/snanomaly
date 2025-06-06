@@ -72,7 +72,8 @@ class BaseInterpolator(ABC):
     def _predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs):
         pass
 
-    def predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs):
+    def predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs) -> dict | tuple[dict, dict]:
+        """Returns the predicted light curve and optionally the standard deviation of the prediction if applicable."""
         if self.predicted_peak_time is None:
             raise PeakTimeNotSetError("Set time of peak brightness before making predictions")
 

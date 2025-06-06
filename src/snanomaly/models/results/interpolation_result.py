@@ -15,3 +15,4 @@ class InterpolationResult(Result):
     days_pre_peak: int = field()
     days_post_peak: int = field()
     preds: list[np.ndarray] = field()
+    stds: list[np.ndarray] = field(default=None)
