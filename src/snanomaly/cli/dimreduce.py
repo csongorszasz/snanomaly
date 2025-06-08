@@ -7,6 +7,7 @@ from sklearn.manifold import TSNE
 from snanomaly import dirs
 from snanomaly.dimreduction.util import dimreduced_to_df, square_distance
 from snanomaly.models.results.util import prepare_df_for_learning
+from snanomaly.visualization.dimreduction import PlotDimreduction
 
 
 @click.group()
@@ -30,7 +31,7 @@ def dimreduce():
 @click.option("-v", "--verbosity-level", default=2, type=int, show_default=True,
               help="Verbosity for the learning phase: 0 - no logs, 1 - some logs, 2 - detailed logs")
 def tsne(inpath: str, dims: int, perplexity: float, early_exaggeration: float, max_iter: int, init: str, method: str,
-         random_state: int, plot: bool):
+         random_state: int, plot: bool, verbosity_level: int):
     click.echo("Loading dataframe...")
     df = pl.read_parquet(inpath)
     click.echo("OK")
@@ -49,16 +50,22 @@ def tsne(inpath: str, dims: int, perplexity: float, early_exaggeration: float, m
         method=method,
         metric=square_distance,
         random_state=random_state,
-        verbose=2,
+        verbose=verbosity_level,
     )
     X_reduced = reducer.fit_transform(X)
 
     out_dir = dirs.DIMREDUCED / "TSNE"
     pathlib.Path.mkdir(out_dir, parents=True, exist_ok=True)
+    out_path = out_dir / f"{inpath.stem}_TSNE_{dims}D.parquet"
 
     df_reduced = dimreduced_to_df(df, X_reduced)
-    df_reduced.write_parquet(out_dir / f"{inpath.stem}_TSNE_{dims}D.parquet")
+    df_reduced.write_parquet(out_path)
+    click.echo(f"Reduced data saved to {out_path}")
 
     if plot:
-        raise NotImplementedError
+        if dims == 2:
+            plotter = PlotDimreduction(X_reduced)
+            plotter.show()
+        else:
+            click.echo("Plotting is only supported for 2D embeddings. Skipping plot generation.")
 
