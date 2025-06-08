@@ -12,6 +12,6 @@ class Color(Enum):
     g = "green"
     r = "red"
     i = "brown"
-    g_pr = qualitative.Pastel[6]
-    r_pr = qualitative.Pastel[7]
-    i_pr = qualitative.Pastel[8]
+    g_pr = qualitative.Pastel[8]
+    r_pr = qualitative.Pastel[6]
+    i_pr = qualitative.Pastel[7]
