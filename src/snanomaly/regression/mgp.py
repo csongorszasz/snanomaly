@@ -77,9 +77,7 @@ class PreparedData:
 
     def _init_bands(self, bands: list[Band]) -> list[Band]:
         bands_binned = [band.binned(bin_width=1) if not band.is_binned else band for band in bands]
-        # TODO: filter
         # TODO: Handle upper limits
-        # TODO: filter again
         return bands_binned
 
     def _keep_interval_relative_to_peak(self, peak_band: BandEnum, prediction_interval_from_peak: tuple[int, int]) -> None:
@@ -264,7 +262,7 @@ class MGPInterpolator:
         kernels = self._init_kernels() if kernels is None else kernels
         scale, scale_bounds = self._init_scale_matrix()
         ms_kernel = MultiStateKernel(kernels=kernels, scale=scale, scale_bounds=scale_bounds)
-        # alpha = self._init_alpha() # TODO
+        alpha = self._init_alpha()
         optimizer = self._init_optimizer()
         return GaussianProcessRegressor(
             kernel=ms_kernel,

@@ -18,12 +18,12 @@ class BaseInterpolator(ABC):
     kind: str = field()
     interpolator_arguments: dict = field(factory=dict)
     random_state: int = field(default=42)
-    bands_binned: list[Band] = field(init=False)
+    bands_binned: list[Band] = field(init=False, factory=list)
     _predicted_peak_time: float = field(init=False, default=None)
 
     def __attrs_post_init__(self):
         self.bands_binned = [
-            band.binned(bin_width=1) if not band.is_binned else band for band in self.bands.get_bands(self.bandset)
+            band.binned(bin_width=1).process_upper_limits() for band in self.bands.get_bands(self.bandset)
         ]
         self.train()
 

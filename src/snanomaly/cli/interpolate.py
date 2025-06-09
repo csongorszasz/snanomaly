@@ -23,12 +23,13 @@ def interpolate():
     pass
 
 def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tuple[dict, dict],
-                      interpolator: BaseInterpolator):
+                      interpolator: BaseInterpolator, plot_width: int, plot_height: int):
     stds = None
     if isinstance(predictions, tuple):
         predictions, stds = predictions[0], predictions[1]
     plotter = PlotInterpolation(
         original_bands=sn.photometry.bands,
+        preprocessed_bands=interpolator.bands_binned,
         int_result=InterpolationResult(
             sn_name=sn.name,
                 bandset=bandset,
@@ -41,7 +42,7 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tup
     )
     plotter.set_title(sn.name)
     plotter.set_subtitle(get_display_name(interpolator.kind))
-    plotter.show(600, 600)
+    plotter.show(plot_width, plot_height)
 
 @interpolate.command()
 @click.argument("sn_name", required=True)
@@ -51,8 +52,11 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tup
 @click.option("--gauss-multi", is_flag=True, default=False, help="Only run multivariate (multiple kernels) Gaussian Process Regression for interpolation.")
 @click.option("--kernel-ridge", is_flag=True, default=False, help="Only run Kernel Ridge Regression for interpolation.")
 @click.option("--grad-boost", is_flag=True, default=False, help="Only run Gradient Boosting Regression for interpolation.")
-@click.option("--bspline-k", default=3, type=int, help="B-spline degree.")
+@click.option("--bspline-k", default=3, type=int, help="B-spline degree.", show_default=True)
 @click.option("--stop-after-first", is_flag=True, default=False, help="Stop after the first interpolation is run.")
+@click.option("--plot-width", default=600, type=int, help="Width of the plot in pixels.", show_default=True)
+@click.option("--plot-height", default=600, type=int, help="Height of the plot in pixels.", show_default=True)
+@click.option("--verbosity-level", default=2, type=int, help="Verbosity level for logging (0: none, 1: basic, 2: detailed).", show_default=True)
 def one(
     sn_name: str,
     linear: bool,
@@ -63,6 +67,9 @@ def one(
     grad_boost: bool,
     bspline_k: int,
     stop_after_first: bool,
+    plot_width: int,
+    plot_height: int,
+    verbosity_level: int,
 ):
     method_flags = {
         Method.LINEAR.value: linear,
@@ -103,9 +110,11 @@ def one(
                     click.echo(f"bandset={bs.__str__()} interpolator_class={interpolator_class.__name__} method={kind}")
                     interpolator: BaseInterpolator = interpolator_class(
                         sn_name=sn_name, bandset=bs, bands=sn_obj.photometry.bands, peak_band=peak_band, kind=kind,
+                        interpolator_arguments={"verbose": verbosity_level},
                     )
                     preds = interpolator.predict_from_peak((-20, 100))
-                    _plot_predictions(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
+                    _plot_predictions(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator,
+                                      plot_width=plot_width, plot_height=plot_height)
 
                     if stop_after_first:
                         click.echo("Stopping after the first interpolation.")

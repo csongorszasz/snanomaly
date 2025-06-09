@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import attrs
 import numpy as np
 from attrs import define, field
@@ -17,6 +19,7 @@ class Band:
     e_flux: np.array = field(default=np.array([], dtype=np.float64))
     upperlimit: np.array = field(default=np.array([], dtype=bool))
     _is_binned = field(default=False)
+    _is_upperlimits_converted = field(default=False)
     _is_normalized = field(default=False)
     _norm_factor = field(default=None)
 
@@ -98,12 +101,50 @@ class Band:
         self.e_flux *= self._norm_factor
         self._is_normalized = False
 
-    def binned(self, bin_width: int, discrete_time: bool = True):
+    def binned(self, bin_width: int, discrete_time: bool = True) -> Band:
         """
         Returns a binned version of the band.
         """
         from snanomaly.preprocessing.binning import Binning
         return Binning(self, bin_width, discrete_time)()
+
+    def process_upper_limits(self) -> Band:
+        """
+        Only keep upper limits that are either earlier than the earliest real detection or later than the latest real
+        detection.
+
+        Convert the kept upper limits to real observations by assigning them to `0` with a `3 * upperlimit` error.
+        """
+        min_real_time = self.time[~self.upperlimit].min()
+        max_real_time = self.time[~self.upperlimit].max()
+        keep_condition = self.upperlimit & ((self.time < min_real_time) | (self.time > max_real_time))
+        upperlimit_indices_to_keep = np.where(keep_condition)[0]
+
+        self.e_flux[upperlimit_indices_to_keep] = 3 * self.flux[upperlimit_indices_to_keep]
+        self.flux[upperlimit_indices_to_keep] = 0
+
+        # remove the rest of the upper limits
+        all_indices_to_keep = np.sort(
+            np.concatenate((upperlimit_indices_to_keep, np.where(~self.upperlimit)[0])),
+        )
+        self._is_upperlimits_converted = True
+        return self.filter_by_indices(all_indices_to_keep)
+
+    def filter_by_indices(self, indices_to_keep: np.ndarray) -> Band:
+        self.time = self.time[indices_to_keep]
+        self.e_time = self.e_time[indices_to_keep]
+        self.flux = self.flux[indices_to_keep]
+        self.e_flux = self.e_flux[indices_to_keep]
+        self.upperlimit = self.upperlimit[indices_to_keep]
+        return self
+
+    def filter_by_condition(self, cond) -> Band:
+        self.time = self.time[cond]
+        self.e_time = self.e_time[cond]
+        self.flux = self.flux[cond]
+        self.e_flux = self.e_flux[cond]
+        self.upperlimit = self.upperlimit[cond]
+        return self
 
     def __repr__(self):
         return f"Band({self.name}, {self.nr_observations} observations)"

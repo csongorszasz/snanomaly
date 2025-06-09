@@ -21,6 +21,9 @@ class InterpolatorFactory:
 
     @classmethod
     def _linear(cls, x: np.ndarray, y: np.ndarray, **kwargs) -> interp1d:
+        if "verbose" in kwargs:
+            # not supported
+            kwargs.pop("verbose")
         return interp1d(x, y, kind="linear", fill_value="extrapolate")
 
     @classmethod
@@ -29,5 +32,8 @@ class InterpolatorFactory:
             kwargs["k"] = int(os.environ["BSPLINE_K"])
         elif "k" not in kwargs:
             kwargs["k"] = 3
+        if "verbose" in kwargs:
+            # not supported
+            kwargs.pop("verbose")
         t, c, k = make_interp_spline(x, y, **kwargs).tck
         return BSpline(t, c, k, extrapolate=True)

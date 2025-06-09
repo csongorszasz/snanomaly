@@ -29,7 +29,7 @@ class PhotometryObs(Observation):
     e_upper_magnitude: Optional[float] = field(default=0, validator=validators.optional(validators.ge(0)))
     zeropoint: Optional[float] = field(default=None)
     band: Optional[str] = field(default=None, validator=validators.instance_of(str))
-    bandset: Optional[str] = field(default=None) # TODO: handle differences between band set systems (e.g.: AB vs UBVRI vs VEGA)
+    bandset: Optional[str] = field(default=None)
     system: Optional[str] = field(default=None)
     upperlimit: Optional[bool] = field(default=False)
     upperlimitsigma: Optional[float] = field(default=None)

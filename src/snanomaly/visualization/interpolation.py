@@ -18,6 +18,7 @@ from snanomaly.visualization.util import color_to_rgba
 @define
 class PlotInterpolation:
     original_bands: Bands = field()
+    preprocessed_bands: list[Band] = field()
     int_result: InterpolationResult = field()
     figure: go.Figure = field(factory=go.Figure, init=False)
 
@@ -85,8 +86,15 @@ class PlotInterpolation:
                     },
                     x=band.time[band.upperlimit],
                     y=band.flux[band.upperlimit],
-                    name=f"{band.name.replace("_pr", "'")} (upper limit)",
+                    name=f"Band: {band.name.replace("_pr", "'")} (upper limit)",
                     hoverinfo="text",
+                    error_y={
+                        "type": "data",
+                        "array": band.e_flux,
+                        "visible": True,
+                        "color": color,  # Match error bar color with marker color
+                        "thickness": 1.5,
+                    },
                 ),
             )
         # interpolation

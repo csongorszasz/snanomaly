@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
@@ -38,6 +39,9 @@ class RegressorFactory:
             #  - dense data => higher gamma (around 0.01) for tighter fitting
             # kwargs["gamma"] = 0.01
             kwargs["gamma"] = 0.0005
+        if "verbose" in kwargs:
+            # not supported
+            kwargs.pop("verbose")
         return KernelRidge(**kwargs)
 
     @classmethod
@@ -55,13 +59,17 @@ class RegressorFactory:
     @classmethod
     def _gpr_uni(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
         if "kernel" not in kwargs:
-            kwargs["kernel"] = RBF(length_scale_bounds=(1, 30))
+            max_time_diff = np.max(np.diff(band.time))
+            kwargs["kernel"] = RBF(length_scale_bounds=(min(max_time_diff, 60), 1e4))
         if "alpha" not in kwargs and band:
             kwargs["alpha"] = band.e_flux
         if "n_restarts_optimizer" not in kwargs:
             kwargs["n_restarts_optimizer"] = 0
         if "random_state" not in kwargs:
             kwargs["random_state"] = 42
+        if "verbose" in kwargs:
+            # not supported
+            kwargs.pop("verbose")
         return GaussianProcessRegressor(**kwargs)
 
     @classmethod
