@@ -24,7 +24,7 @@
   - ~~Gaussian Processes~~
   - ~~Kernel Ridge Regression~~
   - Support Vector Machines
-  - Gradient Boosting Regression
+  - ~~Gradient Boosting Regression~~
 - ~~visualization of reconstructed lightcurves~~
   - ~~error bars for ground truth data points~~
 
@@ -33,6 +33,7 @@
   - ~~t-SNE~~
   - PCA
   - UMAP
+  - Isomap
   - LLE
 - visualization of reduced data
 
@@ -45,6 +46,15 @@
 
 
 ### Possibilities for improvement
-1. Handle upper limits differently from normal observations
-2. Handle differences between band set systems in photometry data (e.g.: AB vs UBVRI vs VEGA)
-3. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)
+1. ~~! Handle upper limits differently from normal observations~~
+2. ~~! Cut down fitting interval or do something so that distant observations don't affect the predictions~~
+3. ! Add ignored upper limits colored in black
+4. ! Add black outline to interpolation plots
+5. ! Modify the legend in the interpolation plots so that it doesn't overlap the light curves
+6. ! Experiment with ARD for GPR hyperparameter setting
+7. ! Experiment with Grid Search and similar methods for KRR for hyperparameter setting
+8. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)
+   - difficult because not every observation comes with zero-point information
+9. Convert count rate to flux
+10. Convert flux density to flux
+11. Involve spectral data in the outlier detection

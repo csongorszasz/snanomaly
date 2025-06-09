@@ -1,4 +1,5 @@
 import numpy as np
+from loguru import logger
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
@@ -59,8 +60,10 @@ class RegressorFactory:
     @classmethod
     def _gpr_uni(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
         if "kernel" not in kwargs:
-            max_time_diff = np.max(np.diff(band.time))
-            kwargs["kernel"] = RBF(length_scale_bounds=(min(max_time_diff, 60), 1e4))
+            avg_adjacent_time_dist = np.mean(np.diff(band.time))
+            lower_bound_top = 1e5
+            logger.debug(f"band={band.name} length_scale_bounds=({avg_adjacent_time_dist, lower_bound_top})")
+            kwargs["kernel"] = RBF(length_scale_bounds=(avg_adjacent_time_dist, lower_bound_top))
         if "alpha" not in kwargs and band:
             kwargs["alpha"] = band.e_flux
         if "n_restarts_optimizer" not in kwargs:

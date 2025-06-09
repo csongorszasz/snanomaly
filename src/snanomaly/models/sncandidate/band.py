@@ -64,6 +64,14 @@ class Band:
     def norm_factor(self, value: float):
         self._norm_factor = value
 
+    @property
+    def is_upperlimits_converted(self):
+        return self._is_upperlimits_converted
+
+    @property
+    def is_normalized(self):
+        return self._is_normalized
+
     @classmethod
     def get_public_field_names(cls):
         """
@@ -119,6 +127,8 @@ class Band:
         max_real_time = self.time[~self.upperlimit].max()
         keep_condition = self.upperlimit & ((self.time < min_real_time) | (self.time > max_real_time))
         upperlimit_indices_to_keep = np.where(keep_condition)[0]
+        if upperlimit_indices_to_keep.size == 0:
+            return self.filter_by_condition(~self.upperlimit)
 
         self.e_flux[upperlimit_indices_to_keep] = 3 * self.flux[upperlimit_indices_to_keep]
         self.flux[upperlimit_indices_to_keep] = 0

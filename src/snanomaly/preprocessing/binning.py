@@ -113,7 +113,7 @@ class Binning:
             e_time=np.zeros(len(bin_centers)) + 0.5 * self.bin_width,
             flux=np.array(binned_flux),
             e_flux=np.array(binned_e_flux),
-            upperlimit=self.band.upperlimit,
+            upperlimit=np.array(binned_upperlimit),
         )
 
     def __call__(self) -> Band:
