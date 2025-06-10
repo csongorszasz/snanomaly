@@ -25,10 +25,13 @@ class PlotInterpolation:
 
     def __attrs_post_init__(self):
         for b in self.preprocessed_bands:
-            b.denormalize()
+            if b.is_normalized:
+                b.denormalize()
 
         self.figure.update_layout(FigLayout.light_curves())
-        self.figure.update_xaxes(range=[self.prediction_interval.min(), self.prediction_interval.max()])
+        pred_min, pred_max = self.prediction_interval.min(), self.prediction_interval.max()
+        self.figure.update_xaxes(range=[pred_min, pred_max], tickmode="array",
+                                 tickvals=np.arange(pred_min, pred_max + 1, (pred_max - pred_min) / 6), tickformat="d")
         self.figure.update_yaxes(range=[0 - self.max_flux_across_all / 40, 1.5 * self.max_flux_across_all])
         self.set_title(self.int_result.sn_name)
         self.set_bands()
@@ -123,8 +126,8 @@ class PlotInterpolation:
                     marker={
                         "symbol": "triangle-down",
                         "color": "black",
-                        "size": 7,
-                        "line": {"width": 1.5, "color": color},
+                        "size": 5,
+                        "line": {"width": 1, "color": color},
                     },
                     x=band.ignored_upperlimits_time,
                     y=band.ignored_upperlimits_flux,
@@ -142,6 +145,7 @@ class PlotInterpolation:
                         "symbol": "triangle-down",
                         "color": color,
                         "size": 5,
+                        "line": {"width": 0.5, "color": "white"},
                     },
                     x=band.time[band.upperlimit].ravel(),
                     y=band.flux[band.upperlimit],
@@ -162,14 +166,14 @@ class PlotInterpolation:
         if gnd_truth:
             self.figure.add_trace(
                 go.Scatter(
-                    x=original_band.time[~original_band.upperlimit],
-                    y=original_band.flux[~original_band.upperlimit],
+                    x=band.time[~band.upperlimit].ravel(),
+                    y=band.flux[~band.upperlimit],
                     mode="markers",
                     name="ground truth",
-                    marker={"color": color, "symbol": "x", "size": 5},
+                    marker={"color": color, "symbol": "x", "size": 5, "line": {"width": 0.5, "color": "white"}},
                     error_y={
                         "type": "data",
-                        "array": original_band.e_flux,
+                        "array": band.e_flux,
                         "visible": True,
                         "color": color,  # Match error bar color with marker color
                         "thickness": 1,
