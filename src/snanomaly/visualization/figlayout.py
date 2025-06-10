@@ -2,7 +2,12 @@ class FigLayout:
     @classmethod
     def _xaxis_mjd(cls) -> dict:
         return {
-            "title_text": "Time (Modified Julian Date)",
+            "title": {
+                "text": "Time (Modified Julian Date)",
+                "font": {
+                    "size": 12,
+                },
+            },
             "exponentformat": "none",
             "linewidth": 1,
             "linecolor": "black",
@@ -17,7 +22,12 @@ class FigLayout:
     @classmethod
     def _yaxis_flux(cls) -> dict:
         return {
-            "title_text": r"$Flux [\text{erg}\,\text{s}^{-1}\,\text{Hz}^{-1}\,\text{cm}^{-2}]$",
+            "title": {
+                "text": r"$\text{Flux }(erg\,s^{-1}\,Hz^{-1}\,cm^{-2})$",
+                "font": {
+                    "size": 12,
+                },
+            },
             "exponentformat": "power",
             "showexponent": "all",
             "linewidth": 1,
