@@ -22,8 +22,8 @@ from snanomaly.visualization.interpolation import PlotInterpolation
 def interpolate():
     pass
 
-def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tuple[dict, dict],
-                      interpolator: BaseInterpolator, plot_width: int, plot_height: int):
+def _create_predictions_plot(sn: SNCandidate, bandset: Bandset, predictions: dict | tuple[dict, dict],
+                             interpolator: BaseInterpolator) -> PlotInterpolation:
     stds = None
     if isinstance(predictions, tuple):
         predictions, stds = predictions[0], predictions[1]
@@ -42,7 +42,8 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tup
     )
     plotter.set_title(sn.name)
     plotter.set_subtitle(get_display_name(interpolator.kind))
-    plotter.show(plot_width, plot_height)
+    return plotter
+
 
 @interpolate.command()
 @click.argument("sn_name", required=True)
@@ -54,8 +55,10 @@ def _plot_predictions(sn: SNCandidate, bandset: Bandset, predictions: dict | tup
 @click.option("--grad-boost", is_flag=True, default=False, help="Only run Gradient Boosting Regression for interpolation.")
 @click.option("--bspline-k", default=3, type=int, help="B-spline degree.", show_default=True)
 @click.option("--stop-after-first", is_flag=True, default=False, help="Stop after the first interpolation is run.")
-@click.option("--plot-width", default=600, type=int, help="Width of the plot in pixels.", show_default=True)
-@click.option("--plot-height", default=600, type=int, help="Height of the plot in pixels.", show_default=True)
+@click.option("--plot-rows", default=-1, type=int, help="Number of rows in the plot grid (applies when creating plot with subplots). If `-1` is given, then `plot-cols` is dynamically calculated.", show_default=True)
+@click.option("--plot-cols", default=-1, type=int, help="Number of columns in the plot grid (applies when creating plot with subplots). If `-1` is given, then `plot-rows` is", show_default=True)
+@click.option("--plot-width", default=600, type=int, help="Width of the plot in pixels (applies to one individual supernova plot).", show_default=True)
+@click.option("--plot-height", default=600, type=int, help="Height of the plot in pixels (applies to one individual supernova plot).", show_default=True)
 @click.option("--verbosity-level", default=2, type=int, help="Verbosity level for logging (0: none, 1: basic, 2: detailed).", show_default=True)
 def one(
     sn_name: str,
@@ -67,6 +70,8 @@ def one(
     grad_boost: bool,
     bspline_k: int,
     stop_after_first: bool,
+    plot_rows: int,
+    plot_cols: int,
     plot_width: int,
     plot_height: int,
     verbosity_level: int,
@@ -100,9 +105,16 @@ def one(
         click.echo(f"> Interpolating `{sn_obj.name}`")
         click.echo(f"Available band sets: {sn_obj.photometry.bands.available_bandsets}")
 
+        plotters = []
+        combined_figures = (plot_rows != -1 or plot_cols != -1)
+        stop_iterating = False
         for bs in sn_obj.photometry.bands.available_bandsets:
+            if stop_iterating:
+                break
             peak_band = BandEnum[bs.value[1]]
             for interpolator_class, kinds in interpolators_to_iterate:
+                if stop_iterating:
+                    break
                 for kind in kinds:
                     if not method_flags[kind]:
                         continue
@@ -113,12 +125,29 @@ def one(
                         interpolator_arguments={"verbose": verbosity_level},
                     )
                     preds = interpolator.predict_from_peak((-20, 100))
-                    _plot_predictions(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator,
-                                      plot_width=plot_width, plot_height=plot_height)
+                    plotter = _create_predictions_plot(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
+                    plotters.append(plotter)
 
                     if stop_after_first:
                         click.echo("Stopping after the first interpolation.")
-                        return
+                        stop_iterating = True
+                        break
+
+        if not combined_figures:
+            for p in plotters:
+                p.show(plot_width, plot_height)
+        else:
+            if plot_rows == -1:
+                plot_rows = len(plotters) // plot_cols
+            elif plot_cols:
+                plot_cols = len(plotters) // plot_rows
+            PlotInterpolation.show_grid(
+                plotters=plotters,
+                nrows=plot_rows,
+                ncols=plot_cols,
+                width_per_subfig=plot_width,
+                height_per_subfig=plot_height,
+            )
 
     except DataPointNotFoundError:
         click.echo(message=f"Could not find supernova candidate with name `{sn_name}`", err=True)

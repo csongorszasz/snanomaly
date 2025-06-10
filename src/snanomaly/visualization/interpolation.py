@@ -33,6 +33,7 @@ class PlotInterpolation:
         self.figure.update_xaxes(range=[pred_min, pred_max], tickmode="array",
                                  tickvals=np.arange(pred_min, pred_max + 1, (pred_max - pred_min) / 6), tickformat="d")
         self.figure.update_yaxes(range=[0 - self.max_flux_across_all / 40, 1.5 * self.max_flux_across_all])
+        self.figure.update_layout(margin=dict(l=0, r=0, t=100, b=50))
         self.set_title(self.int_result.sn_name)
         self.set_bands()
 
@@ -56,10 +57,10 @@ class PlotInterpolation:
                                                               self.int_result.days_post_peak)
 
     def set_title(self, text: str):
-        self.figure.update_layout(title={"text": text, "x": 0.5, "font": {"size": 18}})
+        self.figure.update_layout(title={"text": text, "x": 0.5, "y": 0.97, "font": {"size": 30}})
 
     def set_subtitle(self, text: str):
-        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray", "size": 10}})
+        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray", "size": 16}})
 
     def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()
@@ -198,3 +199,52 @@ class PlotInterpolation:
             width=width, height=height,
         )
         self.figure.show()
+
+    @staticmethod
+    def show_grid(
+        plotters: list[PlotInterpolation],
+        nrows: int,
+        ncols: int,
+        width_per_subfig: int,
+        height_per_subfig: int,
+        output_path: str = "grid_plot.png",
+    ):
+        import io
+
+        from PIL import Image
+
+        # Convert each figure to image bytes
+        imgs = []
+        for p in plotters:
+            img_bytes = p.figure.to_image(format="png", width=width_per_subfig, height=height_per_subfig)
+            imgs.append(img_bytes)
+
+        # Define the grid dimensions for the final image
+        grid_width = ncols * width_per_subfig
+        grid_height = nrows * height_per_subfig
+
+        # Create a new blank image (RGBA to handle potential transparency, white background)
+        grid_image = Image.new("RGBA", (grid_width, grid_height), (255, 255, 255, 255))
+
+        # Convert each figure to image bytes and paste it onto the grid
+        for idx, p in enumerate(plotters):
+            if idx >= nrows * ncols:
+                break  # Don't process more images than grid cells
+
+            img_bytes = p.figure.to_image(format="png", width=width_per_subfig, height=height_per_subfig)
+            img = Image.open(io.BytesIO(img_bytes))
+
+            # Calculate position in grid
+            row = idx // ncols
+            col = idx % ncols
+            x = col * width_per_subfig
+            y = row * height_per_subfig
+
+            # Paste the image onto the grid
+            grid_image.paste(img, (x, y))
+
+        # Save the final grid image
+        # If the output path is for a format that doesn't support alpha (like JPEG), convert to RGB
+        if output_path.lower().endswith((".jpg", ".jpeg")):
+            grid_image = grid_image.convert("RGB")
+        grid_image.save(output_path)
