@@ -12,8 +12,8 @@ class Method(Enum):
 display_names = {
     Method.LINEAR.value: "Linear interpolation",
     Method.BSPLINE.value: "B-spline interpolation",
-    Method.GAUSS_UNI.value: "Gaussian Process Regression (one kernel)",
-    Method.GAUSS_MULTI.value: "Gaussian Process Regression (multiple kernels)",
+    Method.GAUSS_UNI.value: "Gaussian Process Regression (single-output)",
+    Method.GAUSS_MULTI.value: "Gaussian Process Regression (multi-output)",
     Method.KERNEL_RIDGE.value: "Kernel Ridge Regression",
     Method.GRADIENT_BOOST.value: "Gradient Boost Regression",
 }

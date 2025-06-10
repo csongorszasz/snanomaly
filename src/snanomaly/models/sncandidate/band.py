@@ -20,15 +20,10 @@ class Band:
     upperlimit: np.array = field(default=np.array([], dtype=bool))
     _is_binned = field(default=False)
     _is_upperlimits_converted = field(default=False)
+    _ignored_upperlimits_time: np.array = field(default=np.array([], dtype=np.float64))
+    _ignored_upperlimits_flux: np.array = field(default=np.array([], dtype=np.float64))
     _is_normalized = field(default=False)
     _norm_factor = field(default=None)
-
-    @property
-    def matrix(self):
-        """
-        Returns the band data as a 2D matrix.
-        """
-        return np.vstack([self.time, self.e_time, self.flux, self.e_flux])
 
     @property
     def nr_observations(self):
@@ -43,9 +38,6 @@ class Band:
 
     @name.setter
     def name(self, value: str):
-        """
-        Sets the name of the band.
-        """
         self._name = value
 
     @property
@@ -67,6 +59,26 @@ class Band:
     @property
     def is_upperlimits_converted(self):
         return self._is_upperlimits_converted
+
+    @is_upperlimits_converted.setter
+    def is_upperlimits_converted(self, value: bool):
+        self._is_upperlimits_converted = value
+
+    @property
+    def ignored_upperlimits_time(self):
+        return self._ignored_upperlimits_time
+
+    @ignored_upperlimits_time.setter
+    def ignored_upperlimits_time(self, value: np.ndarray):
+        self._ignored_upperlimits_time = value
+
+    @property
+    def ignored_upperlimits_flux(self):
+        return self._ignored_upperlimits_flux
+
+    @ignored_upperlimits_flux.setter
+    def ignored_upperlimits_flux(self, value: np.ndarray):
+        self._ignored_upperlimits_flux = value
 
     @property
     def is_normalized(self):
@@ -137,6 +149,8 @@ class Band:
         all_indices_to_keep = np.sort(
             np.concatenate((upperlimit_indices_to_keep, np.where(~self.upperlimit)[0])),
         )
+        self._ignored_upperlimits_time = self.time[~all_indices_to_keep]
+        self._ignored_upperlimits_flux = self.flux[~all_indices_to_keep]
         self._is_upperlimits_converted = True
         return self.filter_by_indices(all_indices_to_keep)
 

@@ -28,6 +28,7 @@ class PlotInterpolation:
 
         self.figure.update_layout(FigLayout.light_curves())
         self.figure.update_xaxes(range=[self.prediction_interval.min(), self.prediction_interval.max()])
+        self.figure.update_yaxes(minallowed=0)
         self.set_title(self.int_result.sn_name)
         self.set_bands()
 
@@ -41,7 +42,7 @@ class PlotInterpolation:
         self.figure.update_layout(title={"text": text, "x": 0.5})
 
     def set_subtitle(self, text: str):
-        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray"}})
+        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray", "size": 10}})
 
     def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()
@@ -59,83 +60,20 @@ class PlotInterpolation:
         interpolation_result = True
         stds = True
 
-        # ground truth
-        if gnd_truth:
-            self.figure.add_trace(
-                go.Scatter(
-                    x=original_band.time[~original_band.upperlimit],
-                    y=original_band.flux[~original_band.upperlimit],
-                    mode="markers",
-                    name=f"Band: {original_band.name.replace("_pr", "'")} (observation)",
-                    marker={"color": color, "symbol": "x", "size": 7},
-                    error_y={
-                        "type": "data",
-                        "array": original_band.e_flux,
-                        "visible": True,
-                        "color": color,  # Match error bar color with marker color
-                        "thickness": 1.5,
-                    },
-                ),
-            )
-        if upper_limits:
-            # ignored upper limits
-            # self.figure.add_trace(
-            #     go.Scatter(
-            #         mode="markers",
-            #         marker={
-            #             "symbol": "triangle-down",
-            #             "color": "black",
-            #             "size": 5,
-            #             "line": {"width": 0.25, "color": "black"},
-            #         },
-            #         x=original_band.time[original_band.upperlimit],
-            #         y=original_band.flux[original_band.upperlimit],
-            #         name=f"Band: {original_band.name.replace("_pr", "'")} (upper limit)",
-            #         hoverinfo="text",
-            #         error_y={
-            #             "type": "data",
-            #             "array": original_band.e_flux,
-            #             "visible": True,
-            #             "color": "black",  # Match error bar color with marker color
-            #             "thickness": 1.5,
-            #         },
-            #     ),
-            # )
-            # kept upper limits
-            self.figure.add_trace(
-                go.Scatter(
-                    mode="markers",
-                    marker={
-                        "symbol": "triangle-down",
-                        "color": color,
-                        "size": 7,
-                        "line": {"width": 0.25, "color": "black"},
-                    },
-                    x=band.time[band.upperlimit].ravel(),
-                    y=band.flux[band.upperlimit],
-                    name=f"Band: {band.name.replace("_pr", "'")} (upper limit)",
-                    hoverinfo="text",
-                    error_y={
-                        "type": "data",
-                        "array": band.e_flux,
-                        "visible": True,
-                        "color": color,  # Match error bar color with marker color
-                        "thickness": 1.5,
-                    },
-                ),
-            )
         # interpolation
         if interpolation_result:
             band_index = BaseInterpolator.get_band_index(BandEnum(band.name), self.int_result.bandset)
             y = self.int_result.preds[band_index]
             pred_x = self.prediction_interval.ravel()
-            self.figure.add_trace(go.Scatter(
-                x=pred_x,
-                y=y,
-                mode="lines",
-                name=f"Band: {band.name.replace("_pr", "'")} (interpolation)",
-                line={"color": color},
-            ))
+            self.figure.add_trace(
+                go.Scatter(
+                    x=pred_x,
+                    y=y,
+                    mode="lines",
+                    name=f"{band.name.replace('_pr', "'")} (prediction)",
+                    line={"color": color},
+                ),
+            )
 
             # uncertainty (creating a closed polygon shape for the confidence interval bands)
             if stds and self.int_result.stds:
@@ -158,6 +96,63 @@ class PlotInterpolation:
                         hoverinfo="skip",
                     ),
                 )
+        if upper_limits:
+            # ignored upper limits
+            self.figure.add_trace(
+                go.Scatter(
+                    mode="markers",
+                    marker={
+                        "symbol": "triangle-down",
+                        "color": "black",
+                        "size": 7,
+                        "line": {"width": 1.5, "color": color},
+                    },
+                    x=band.ignored_upperlimits_time,
+                    y=band.ignored_upperlimits_flux,
+                    name=f"{original_band.name.replace("_pr", "'")} (ignored upper limit)",
+                    hoverinfo="text",
+                ),
+            )
+            # kept upper limits
+            self.figure.add_trace(
+                go.Scatter(
+                    mode="markers",
+                    marker={
+                        "symbol": "triangle-down",
+                        "color": color,
+                        "size": 5,
+                    },
+                    x=band.time[band.upperlimit].ravel(),
+                    y=band.flux[band.upperlimit],
+                    name=f"{band.name.replace("_pr", "'")} (converted upper limit)",
+                    hoverinfo="text",
+                    error_y={
+                        "type": "data",
+                        "array": band.e_flux,
+                        "visible": True,
+                        "color": color,  # Match error bar color with marker color
+                        "thickness": 1,
+                    },
+                ),
+            )
+        # ground truth
+        if gnd_truth:
+            self.figure.add_trace(
+                go.Scatter(
+                    x=original_band.time[~original_band.upperlimit],
+                    y=original_band.flux[~original_band.upperlimit],
+                    mode="markers",
+                    name=f"{original_band.name.replace('_pr', "'")} (ground truth)",
+                    marker={"color": color, "symbol": "x", "size": 5},
+                    error_y={
+                        "type": "data",
+                        "array": original_band.e_flux,
+                        "visible": True,
+                        "color": color,  # Match error bar color with marker color
+                        "thickness": 1,
+                    },
+                ),
+            )
 
     def _clear_figure(self):
         # Clear all traces from the figure
