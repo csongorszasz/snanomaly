@@ -51,7 +51,7 @@
 3. ~~! Add ignored upper limits colored in black~~
 4. ~~! Add black outline to interpolation plots~~
 5. ~~! Modify the legend in the interpolation plots so that it doesn't overlap the light curves~~
-6. ! Fix formatting of y axes text in light curve plot 
+6. ~~! Fix formatting of y axes text in light curve plot~~ 
 7. ! Experiment with ARD for GPR hyperparameter setting
 8. ! Experiment with Grid Search and similar methods for KRR for hyperparameter setting
 9. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)

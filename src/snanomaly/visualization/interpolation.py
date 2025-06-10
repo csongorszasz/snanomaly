@@ -33,7 +33,7 @@ class PlotInterpolation:
         self.figure.update_xaxes(range=[pred_min, pred_max], tickmode="array",
                                  tickvals=np.arange(pred_min, pred_max + 1, (pred_max - pred_min) / 6), tickformat="d")
         self.figure.update_yaxes(range=[0 - self.max_flux_across_all / 40, 1.5 * self.max_flux_across_all])
-        self.figure.update_layout(margin=dict(l=0, r=0, t=100, b=50))
+        self.figure.update_layout(margin=dict(l=0, r=0, t=60, b=100))
         self.set_title(self.int_result.sn_name)
         self.set_bands()
 
@@ -56,11 +56,19 @@ class PlotInterpolation:
                                                               self.int_result.days_pre_peak,
                                                               self.int_result.days_post_peak)
 
-    def set_title(self, text: str):
-        self.figure.update_layout(title={"text": text, "x": 0.5, "y": 0.97, "font": {"size": 30}})
+    def set_title(self, main_title: str, subtitle: str = ""):
+        self.figure.update_layout(title={
+            "text": main_title,
+            "x": 0.1,
+            "font": {"size": 20},
+        })
+        self.figure.update_layout(title_subtitle={
+            "text": subtitle,
+            "font": {"color": "gray", "size": 10},
+        })
 
     def set_subtitle(self, text: str):
-        self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray", "size": 16}})
+        pass
 
     def set_bands(self, bands: Optional[list[BandEnum]] = None):
         self._clear_figure()

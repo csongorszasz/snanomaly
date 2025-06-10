@@ -40,8 +40,7 @@ def _create_predictions_plot(sn: SNCandidate, bandset: Bandset, predictions: dic
                 stds=list(stds.values()) if stds else None,
             ),
     )
-    plotter.set_title(sn.name)
-    plotter.set_subtitle(get_display_name(interpolator.kind))
+    plotter.set_title(sn.name, get_display_name(interpolator.kind))
     return plotter
 
 
