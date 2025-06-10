@@ -48,13 +48,14 @@
 ### Possibilities for improvement
 1. ~~! Handle upper limits differently from normal observations~~
 2. ~~! Cut down fitting interval or do something so that distant observations don't affect the predictions~~
-3. ! Add ignored upper limits colored in black
-4. ! Add black outline to interpolation plots
-5. ! Modify the legend in the interpolation plots so that it doesn't overlap the light curves
-6. ! Experiment with ARD for GPR hyperparameter setting
-7. ! Experiment with Grid Search and similar methods for KRR for hyperparameter setting
-8. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)
+3. ~~! Add ignored upper limits colored in black~~
+4. ~~! Add black outline to interpolation plots~~
+5. ~~! Modify the legend in the interpolation plots so that it doesn't overlap the light curves~~
+6. ! Fix formatting of y axes text in light curve plot 
+7. ! Experiment with ARD for GPR hyperparameter setting
+8. ! Experiment with Grid Search and similar methods for KRR for hyperparameter setting
+9. Calibrate magnitude using zero-point magnitudes (m_calibrated = m_instrumental - m_zeropoint)
    - difficult because not every observation comes with zero-point information
-9. Convert count rate to flux
-10. Convert flux density to flux
-11. Involve spectral data in the outlier detection
+10. Convert count rate to flux
+11. Convert flux density to flux
+12. Involve spectral data in the outlier detection

@@ -21,6 +21,7 @@ class PlotInterpolation:
     preprocessed_bands: list[Band] = field()
     int_result: InterpolationResult = field()
     figure: go.Figure = field(factory=go.Figure, init=False)
+    _max_flux_across_all: float = field(default=None, init=False)
 
     def __attrs_post_init__(self):
         for b in self.preprocessed_bands:
@@ -28,9 +29,22 @@ class PlotInterpolation:
 
         self.figure.update_layout(FigLayout.light_curves())
         self.figure.update_xaxes(range=[self.prediction_interval.min(), self.prediction_interval.max()])
-        self.figure.update_yaxes(minallowed=0)
+        self.figure.update_yaxes(range=[0 - self.max_flux_across_all / 40, 1.5 * self.max_flux_across_all])
         self.set_title(self.int_result.sn_name)
         self.set_bands()
+
+    @property
+    def max_flux_across_all(self):
+        if self._max_flux_across_all:
+            return self._max_flux_across_all
+        og_max = max(
+            band.flux.max() for band in self.original_bands.get_bands(self.int_result.bandset)
+        )
+        preprocessed_max = max(
+            band.flux.max() for band in self.preprocessed_bands
+        )
+        self._max_flux_across_all = max(og_max, preprocessed_max)
+        return self._max_flux_across_all
 
     @property
     def prediction_interval(self):
@@ -39,7 +53,7 @@ class PlotInterpolation:
                                                               self.int_result.days_post_peak)
 
     def set_title(self, text: str):
-        self.figure.update_layout(title={"text": text, "x": 0.5})
+        self.figure.update_layout(title={"text": text, "x": 0.5, "font": {"size": 18}})
 
     def set_subtitle(self, text: str):
         self.figure.update_layout(title_subtitle={"text": text, "font": {"color": "gray", "size": 10}})
@@ -54,7 +68,6 @@ class PlotInterpolation:
     def _add_band_to_figure(self, band: Band):
         color = self._get_band_color(band)
         original_band = self.original_bands.get_band(band.name)
-
         gnd_truth = True
         upper_limits = True
         interpolation_result = True
@@ -70,8 +83,14 @@ class PlotInterpolation:
                     x=pred_x,
                     y=y,
                     mode="lines",
-                    name=f"{band.name.replace('_pr', "'")} (prediction)",
+                    name="prediction",
                     line={"color": color},
+                    legendgrouptitle={
+                        "text": band.display_name,
+                        "font": {"size": 12},
+                    },
+                    legendgroup=band.display_name,
+                    legendrank=10,
                 ),
             )
 
@@ -109,8 +128,10 @@ class PlotInterpolation:
                     },
                     x=band.ignored_upperlimits_time,
                     y=band.ignored_upperlimits_flux,
-                    name=f"{original_band.name.replace("_pr", "'")} (ignored upper limit)",
+                    name="ignored upper limit",
                     hoverinfo="text",
+                    legendgroup=band.display_name,
+                    legendrank=40,
                 ),
             )
             # kept upper limits
@@ -124,7 +145,7 @@ class PlotInterpolation:
                     },
                     x=band.time[band.upperlimit].ravel(),
                     y=band.flux[band.upperlimit],
-                    name=f"{band.name.replace("_pr", "'")} (converted upper limit)",
+                    name="converted upper limit",
                     hoverinfo="text",
                     error_y={
                         "type": "data",
@@ -133,6 +154,8 @@ class PlotInterpolation:
                         "color": color,  # Match error bar color with marker color
                         "thickness": 1,
                     },
+                    legendgroup=band.display_name,
+                    legendrank=30,
                 ),
             )
         # ground truth
@@ -142,7 +165,7 @@ class PlotInterpolation:
                     x=original_band.time[~original_band.upperlimit],
                     y=original_band.flux[~original_band.upperlimit],
                     mode="markers",
-                    name=f"{original_band.name.replace('_pr', "'")} (ground truth)",
+                    name="ground truth",
                     marker={"color": color, "symbol": "x", "size": 5},
                     error_y={
                         "type": "data",
@@ -151,6 +174,8 @@ class PlotInterpolation:
                         "color": color,  # Match error bar color with marker color
                         "thickness": 1,
                     },
+                    legendgroup=band.display_name,
+                    legendrank=20,
                 ),
             )
 

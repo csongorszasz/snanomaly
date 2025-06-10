@@ -41,6 +41,10 @@ class Band:
         self._name = value
 
     @property
+    def display_name(self):
+        return self._name.replace("_pr", "'")
+
+    @property
     def is_binned(self):
         return self._is_binned
 

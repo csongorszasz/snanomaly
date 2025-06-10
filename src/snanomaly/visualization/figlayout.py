@@ -4,16 +4,30 @@ class FigLayout:
         return {
             "title_text": "Time (Modified Julian Date)",
             "exponentformat": "none",
-            "minor": {"showgrid": True, "ticks": "inside"},
+            "linewidth": 1,
+            "linecolor": "black",
+            "mirror": True,
+            "ticks": "inside",
+            "minor": {
+                "ticks": "inside",
+                "showgrid": True,
+            },
         }
 
     @classmethod
     def _yaxis_flux(cls) -> dict:
         return {
-            "title_text": r"$Flux (\text{erg}\,\text{s}^{-1}\,\text{Hz}^{-1}\,\text{cm}^{-1})$",
+            "title_text": r"$Flux [\text{erg}\,\text{s}^{-1}\,\text{Hz}^{-1}\,\text{cm}^{-2}]$",
             "exponentformat": "power",
             "showexponent": "all",
-            "minor": {"showgrid": True, "ticks": "inside"},
+            "linewidth": 1,
+            "linecolor": "black",
+            "mirror": True,
+            "ticks": "inside",
+            "minor": {
+                "ticks": "inside",
+                "showgrid": True,
+            },
         }
 
     @classmethod
@@ -21,6 +35,26 @@ class FigLayout:
          return {
             "yanchor": "top",
             "xanchor": "right",
+        }
+
+    @classmethod
+    def _legend_bottom_horizontal(cls):
+        pass
+
+    @classmethod
+    def _legend_bands(cls):
+        return {
+            "bordercolor": "black",
+            "borderwidth": 1,
+            "orientation": "h",
+            "xanchor": "right",
+            "x": 0.99,
+            "yanchor": "top",
+            "y": 0.98,
+            "itemwidth": 30,
+            "font": {
+                "size": 8,
+            },
         }
 
     @classmethod
@@ -37,5 +71,5 @@ class FigLayout:
             "xaxis": cls._xaxis_mjd(),
             "yaxis": cls._yaxis_flux(),
             "template": cls._template_light(),
-            "legend": cls._legend_top_right(),
+            "legend": cls._legend_bands(),
         }
