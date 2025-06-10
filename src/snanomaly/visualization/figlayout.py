@@ -48,7 +48,7 @@ class FigLayout:
             "borderwidth": 1,
             "orientation": "h",
             "xanchor": "right",
-            "x": 0.99,
+            "x": 0.98,
             "yanchor": "top",
             "y": 0.98,
             "itemwidth": 30,

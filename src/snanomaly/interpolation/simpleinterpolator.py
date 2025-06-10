@@ -16,17 +16,14 @@ class SimpleInterpolator(BaseInterpolator):
             self.interpolators[band.name] = InterpolatorFactory(x=band.time, y=band.flux, interpolator_type=self.kind,
                                                                 **self.interpolator_arguments)
 
-    def _find_predicted_peak_time(self) -> float:
-        min_day = self.bands_binned[self.get_band_index(self.peak_band, self.bandset)].time.min()
-        max_day = self.bands_binned[self.get_band_index(self.peak_band, self.bandset)].time.max()
-        days_range = max_day - min_day + 1
-        x = np.linspace(min_day, max_day, int(days_range))
-        y = self.interpolators[self.peak_band.value](x)
-        peak_idx = np.argmax(y)
-        return x[peak_idx]
+    def _get_time_array_for_peak_finding(self) -> np.ndarray:
+        band_idx = self.get_band_index(self.peak_band, self.bandset)
+        low = int(self.bands_binned[band_idx].time.min())
+        high = int(self.bands_binned[band_idx].time.max())
+        return np.linspace(low, high, high - low + 1)
 
-    def _predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
-        pass
+    def predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
+        return self.interpolators[band.value](x)
 
     def _predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs):
         x = np.linspace(self.predicted_peak_time + prediction_interval_from_peak[0],

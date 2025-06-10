@@ -48,8 +48,14 @@ class BaseInterpolator(ABC):
         except ValueError:
             raise BandNotFoundError(f"Band `{band}` not found in bandset `{bandset}`")
 
-    @abstractmethod
     def _find_predicted_peak_time(self) -> float:
+        x = self._get_time_array_for_peak_finding()
+        y = self.predict_explicit(x, self.peak_band)
+        peak_idx = np.argmax(y)
+        return x[peak_idx]
+
+    @abstractmethod
+    def _get_time_array_for_peak_finding(self) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -57,16 +63,9 @@ class BaseInterpolator(ABC):
         pass
 
     @abstractmethod
-    def _predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
+    def predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
+        """Returns the predicted light curve an explicit array of x values."""
         pass
-
-    def predict_explicit(self, x_low: float, x_high: float, band: BandEnum = None, **kwargs) -> np.ndarray:
-        """
-        Predict y values independently of peak point.
-        If specified, only return predictions to one band.
-        """
-        x = np.linspace(x_low, x_high, int(x_high - x_low) + 1)
-        return self._predict_explicit(x=x, band=band, kwargs=kwargs)
 
     @abstractmethod
     def _predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs):

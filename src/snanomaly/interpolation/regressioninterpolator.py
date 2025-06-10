@@ -13,15 +13,6 @@ class RegressionInterpolator(BaseInterpolator):
     regressors: dict[tuple[str, RegressorMixin]] = field(init=False, factory=dict)
     norm_factors: dict[tuple[str, float]] = field(init=False, default=None)
 
-    def _find_predicted_peak_time(self) -> float:
-        min_day = self.bands_binned[self.get_band_index(self.peak_band, self.bandset)].time.min()
-        max_day = self.bands_binned[self.get_band_index(self.peak_band, self.bandset)].time.max()
-        days_range = max_day - min_day + 1
-        x = np.linspace(min_day, max_day, int(days_range)).reshape(-1, 1)
-        y = self.regressors[self.peak_band.value].predict(x)
-        peak_idx = np.argmax(y)
-        return x[peak_idx]
-
     def train(self):
         for band in self.bands_binned:
             self.regressors[band.name] = RegressorFactory(regressor_type=self.kind, band=band, **self.interpolator_arguments)
@@ -29,8 +20,19 @@ class RegressionInterpolator(BaseInterpolator):
             band.time = band.time.reshape(-1, 1)
             self.regressors[band.name].fit(band.time, band.flux)
 
-    def _predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
-        pass
+    def _get_time_array_for_peak_finding(self) -> np.ndarray:
+        band_idx = self.get_band_index(self.peak_band, self.bandset)
+
+        observed_max_idx = self.bands_binned[band_idx].flux.argmax()
+        observed_max_time = self.bands_binned[band_idx].time[observed_max_idx]
+
+        low = int(observed_max_time - 120)
+        high = int(observed_max_time + 120)
+
+        return np.linspace(low, high, high - low + 1).reshape(-1, 1)
+
+    def predict_explicit(self, x: np.ndarray, band: BandEnum = None, **kwargs) -> np.ndarray:
+        return self.regressors[band.value].predict(x)
 
     def _predict_from_peak(self, prediction_interval_from_peak: tuple[int, int], **kwargs):
         x = np.linspace(
