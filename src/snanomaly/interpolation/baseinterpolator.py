@@ -19,9 +19,14 @@ class BaseInterpolator(ABC):
     interpolator_arguments: dict = field(factory=dict)
     random_state: int = field(default=42)
     bands_binned: list[Band] = field(init=False, factory=list)
+    silence_warnings: bool = field(default=False)
     _predicted_peak_time: float = field(init=False, default=None)
 
     def __attrs_post_init__(self):
+        if self.silence_warnings:
+            import warnings
+            warnings.filterwarnings("ignore", category=UserWarning)
+
         self.bands_binned = [
             band.binned(bin_width=1).process_upper_limits() for band in self.bands.get_bands(self.bandset)
         ]

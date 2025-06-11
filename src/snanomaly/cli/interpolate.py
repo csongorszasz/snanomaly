@@ -58,6 +58,7 @@ def _create_predictions_plot(sn: SNCandidate, bandset: Bandset, predictions: dic
 @click.option("--plot-cols", default=-1, type=int, help="Number of columns in the plot grid (applies when creating plot with subplots). If `-1` is given, then `plot-rows` is", show_default=True)
 @click.option("--plot-width", default=600, type=int, help="Width of the plot in pixels (applies to one individual supernova plot).", show_default=True)
 @click.option("--plot-height", default=600, type=int, help="Height of the plot in pixels (applies to one individual supernova plot).", show_default=True)
+@click.option("--silence-warnings", is_flag=True, default=False, help="Silence warnings during interpolation.")
 @click.option("--verbosity-level", default=2, type=int, help="Verbosity level for logging (0: none, 1: basic, 2: detailed).", show_default=True)
 def one(
     sn_name: str,
@@ -73,6 +74,7 @@ def one(
     plot_cols: int,
     plot_width: int,
     plot_height: int,
+    silence_warnings: bool,
     verbosity_level: int,
 ):
     method_flags = {
@@ -121,7 +123,7 @@ def one(
                     click.echo(f"bandset={bs.__str__()} interpolator_class={interpolator_class.__name__} method={kind}")
                     interpolator: BaseInterpolator = interpolator_class(
                         sn_name=sn_name, bandset=bs, bands=sn_obj.photometry.bands, peak_band=peak_band, kind=kind,
-                        interpolator_arguments={"verbose": verbosity_level},
+                        interpolator_arguments={"verbose": verbosity_level}, silence_warnings=silence_warnings,
                     )
                     preds = interpolator.predict_from_peak((-20, 100))
                     plotter = _create_predictions_plot(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
