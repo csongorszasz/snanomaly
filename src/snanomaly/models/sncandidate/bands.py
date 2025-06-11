@@ -67,7 +67,7 @@ class Bands:
     r_pr: Band = field(factory=Band)
     i_pr: Band = field(factory=Band)
 
-    _available_bandsets: set[Bandset] = field(factory=set, init=False)
+    _available_bandsets: list[Bandset] = field(factory=list, init=False)
 
     def get_band(self, band_name: BandEnum | str) -> Band:
         return getattr(self, str(band_name))
@@ -117,7 +117,8 @@ class Bands:
         return self._available_bandsets
 
     def add_to_available_bandsets(self, bandset: Bandset):
-        self._available_bandsets.add(bandset)
+        # self._available_bandsets.add(bandset)
+        self._available_bandsets.append(bandset)
 
     def __repr__(self):
         val = ""
