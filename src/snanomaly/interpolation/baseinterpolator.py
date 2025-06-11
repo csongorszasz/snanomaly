@@ -105,4 +105,7 @@ class BaseInterpolator(ABC):
                 y[j:] = 0
                 break
 
+        # Neutralize any remaining negative values
+        y[y < 0] = 0
+
         return y
