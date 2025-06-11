@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pathlib
 from typing import Optional
 
+import click
 import numpy as np
 import plotly.graph_objects as go
 from attrs import define, field
@@ -256,3 +258,5 @@ class PlotInterpolation:
         if output_path.lower().endswith((".jpg", ".jpeg")):
             grid_image = grid_image.convert("RGB")
         grid_image.save(output_path)
+
+        click.echo(f"Grid plot saved to `{pathlib.Path(output_path).absolute()}`")
