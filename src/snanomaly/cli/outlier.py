@@ -129,7 +129,7 @@ def do_outlier_detection(
 @outlier.command()
 @click.option("-i", "--inpath", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True,
               help="Path to Parquet file from dimensionality reduction (must contain 'values' column).")
-@click.option("--n-estimators", type=int, default=100, show_default=True,
+@click.option("--n-estimators", type=int, default=1000, show_default=True,
               help="Number of base estimators for IsolationForest.")
 @click.option("--contamination", default="auto", show_default=True,
               help="Contamination factor for IsolationForest (float or 'auto').")

@@ -22,7 +22,7 @@ class PlotOutlier:
     dataset_name: str = field()
     dim_red_method: str = field()
     dims_str: str = field()
-    model_params_display: dict[str, Any] = field() # For display purposes
+    model_params_display: dict[str, Any] = field()  # For display purposes
 
     figure: go.Figure = field(factory=go.Figure, init=False)
 
@@ -39,11 +39,12 @@ class PlotOutlier:
             "x": x_vals,
             "y": y_vals,
             "mode": "markers",
-            "text": [f"SN: {name}, Score: {s:.4f}" for name, s in zip(self.sn_names, self.score_np, strict=False)],
+            "text": [f"SN: {name}, Score: {s:.4f}" for name, s in zip(self.sn_names, self.score_np, strict=True)],
             "hoverinfo": "text",
         }
 
         # Model-specific settings
+        title_prefix = self.model_name
         if self.model_name == "IsolationForest":
             scatter_trace_params["marker"] = {
                 "size": 5,
@@ -54,7 +55,6 @@ class PlotOutlier:
             }
             scatter_trace_params["name"] = "Data Points"
             outlier_marker_color = "red"
-            title_prefix = "Isolation Forest"
         elif self.model_name == "OneClassSVM":
             scatter_trace_params["marker"] = {
                 "size": 5,
@@ -65,7 +65,6 @@ class PlotOutlier:
             }
             scatter_trace_params["name"] = "Data Points"
             outlier_marker_color = "black"
-            title_prefix = "OneClassSVM"
         else:
             raise ValueError(f"Unknown model_name: {self.model_name}")
 
@@ -83,15 +82,56 @@ class PlotOutlier:
                 hoverinfo="text",
                 name=f"Outliers ({num_outliers})",
             ))
-            for idx in outlier_indices:
+
+            # Define a list of (ax, ay) offsets to cycle through for annotations
+            distances = [33, 93, 125, 164, 192, 256, 299, 351, 398, 466, 489, 522]
+            angles_deg_priority = [90, 270, 0, 180, 45, 135, 225, 315]
+            angles_deg_general = [30, 60, 120, 150, 210, 240, 300, 330]
+
+            annotation_offsets = []
+
+            # Generate priority offsets first
+            for d in [35, 55]: # Slightly adjusted distances for priority
+                for angle_deg in angles_deg_priority:
+                    rad = np.deg2rad(angle_deg)
+                    annotation_offsets.append({"ax": int(d * np.cos(rad)), "ay": -int(d * np.sin(rad))})
+
+            # Generate general offsets
+            for d in distances:
+                for angle_deg in angles_deg_general:
+                    rad = np.deg2rad(angle_deg)
+                    # Add only if it's not too similar to an existing one (simple check)
+                    new_offset = {"ax": int(d * np.cos(rad)), "ay": -int(d * np.sin(rad))}
+                    if not any(abs(new_offset["ax"] - old["ax"]) < 10 and abs(new_offset["ay"] - old["ay"]) < 10 for old in annotation_offsets):
+                        annotation_offsets.append(new_offset)
+
+            # Fallback for very high number of outliers, add more variations
+            if len(outlier_indices) > len(annotation_offsets):
+                for d in [120, 140]:
+                     for angle_deg in np.linspace(0, 360, 16, endpoint=False): # 16 angles
+                        rad = np.deg2rad(angle_deg)
+                        annotation_offsets.append({"ax": int(d * np.cos(rad)), "ay": -int(d * np.sin(rad))})
+
+
+            for i, idx in enumerate(outlier_indices):
+                current_offset = annotation_offsets[i % len(annotation_offsets)]
                 self.figure.add_annotation(
-                    x=x_vals[idx], y=y_vals[idx], text=self.sn_names[idx],
-                    showarrow=True, arrowhead=1, yshift=10,
+                    x=x_vals[idx],
+                    y=y_vals[idx],
+                    text=self.sn_names[idx],
+                    showarrow=True,
+                    arrowhead=1,
+                    arrowwidth=0.5,  # Thinner arrow
+                    ax=current_offset["ax"],
+                    ay=current_offset["ay"],
+                    font={"size": 8},  # Smaller font
+                    bgcolor="rgba(255,255,255,0.5)", # Slight background for text
+                    borderpad=2, # Padding around text
                 )
 
         # Layout and annotations
         plot_title = (
-            f"{title_prefix}: {self.dataset_name} ({self.dim_red_method} {self.dims_str})<br>"
+            f"{title_prefix} applied on top of {self.dim_red_method}<br>"
             f"{num_outliers} outliers ({outlier_percentage:.2f}%)"
         )
         xaxis_title = "x"
@@ -152,4 +192,3 @@ class PlotOutlier:
     def show(self, width: int = 1280, height: int = 720) -> None:
         self.figure.update_layout(width=width, height=height)
         self.figure.show()
-
