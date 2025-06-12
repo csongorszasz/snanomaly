@@ -34,11 +34,13 @@ class OSC(Dataset):
         for file in self.files():
             print(file.name)  # noqa: T201
 
-    def load_dataset(self, batch_size: int) -> Generator[list]:
+    def load_dataset(self, batch_size: int, stop_after: int = None) -> Generator[list]:
         logger.debug(f"Loading OSC dataset at {self.path}")
 
         data = []
-        for file in self.files():
+        for i, file in enumerate(self.files()):
+            if stop_after is not None and i >= stop_after:
+                break
             try:
                 data.append(self.load_datapoint(file))
                 if len(data) == batch_size:

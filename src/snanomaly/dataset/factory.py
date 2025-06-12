@@ -4,10 +4,21 @@ from pathlib import Path
 from typing import Optional
 
 from snanomaly import dirs
+from snanomaly.dataset.exception import DatasetNotFoundError
 from snanomaly.dataset.osc import OSC
 
 
 class OSCFactory:
+    @classmethod
+    def get(cls, dataset_name: str) -> OSC:
+        datasets = {
+            "osc2018_june": cls.OSC2018June,
+            "osc2022": cls.OSC2022,
+        }
+        if dataset_name not in datasets:
+            raise DatasetNotFoundError(f"Dataset `{dataset_name}` not found. Available datasets: {list(datasets.keys())}")
+        return datasets[dataset_name]()
+
     @classmethod
     def OSC2018June(cls, path: Optional[Path] = None):
         return OSC(

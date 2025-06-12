@@ -9,3 +9,6 @@ class InvalidDataPointError(DatasetError):
 
 class DataPointNotFoundError(DatasetError):
     pass
+
+class DatasetNotFoundError(DatasetError):
+    pass

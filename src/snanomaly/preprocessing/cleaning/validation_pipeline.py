@@ -40,20 +40,23 @@ class ValidationPipeline:
                 break
         return self.results
 
-    def print_results(self, only_errors: bool = True):
+    def print_results(self, only_errors: bool = True, printer_func = print):
         """Output the results of a `validate` run."""
         if self.results == []:
             raise ValueError("No results to print. Run `validate` first.")
-        error_msgs = []
+
+        printer_func(f"### {self.subject_name} ###")
+
+        no_errors = True
         for r in self.results:
             if not r.is_valid:
-                error_msgs.append(f"Check failed: [check={r.check_name}; message={r.message}]")
-        if error_msgs:
-            print(f"### {self.subject_name} ###")
-            print("\n".join(error_msgs))
-        elif not only_errors:
-            print(f"### {self.subject_name} ###")
-            print("Passed.")
+                printer_func(f"Check failed: [check={r.check_name}; message={r.message}]")
+                no_errors = False
+            elif not only_errors:
+                printer_func(f"Available band sets: {r.available_bandsets}")
+
+        if no_errors and not only_errors:
+            printer_func("Passed.")
 
     def is_valid(self, data: SNCandidate) -> tuple[bool, SNCandidate]:
         """Return True if all checks pass."""

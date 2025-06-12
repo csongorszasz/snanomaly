@@ -29,10 +29,6 @@ class Binning:
         """Calculate weighted mean and standard error."""
         if y.size == 1:
             return y[0], np.nan
-        # TODO : Check if this is the correct way to handle zero errors
-        # if np.sum(weight) == 0:  # Check for zero-sum weights
-        #     logger.trace("Weights sum to zero in _mean_sigma. Returning NaN.")
-        #     return np.nan, np.nan
         mean, sum_weight = np.average(y, weights=weight, returned=True)
         sgm_mean = np.sqrt(np.sum(weight * (y - mean) ** 2) / sum_weight / (y.size - 1))
         return mean, sgm_mean
@@ -40,7 +36,6 @@ class Binning:
     @staticmethod
     def _typical_err(err: np.ndarray) -> float:
         """Calculate typical error."""
-        err = np.where(err == 0, np.nan, err)
         return 1 / np.sqrt(np.sum(1 / err**2))
 
     @staticmethod
@@ -48,20 +43,12 @@ class Binning:
         """Calculate weighted mean and appropriate error."""
         if y.size == 1:
             return y[0], err[0]
-        err = np.where(err == 0, np.nan, err)
         weight = 1 / err**2
-        # TODO : Check if this is the correct way to handle zero errors
-        # if np.sum(weight) == 0:  # Additional check for zero-sum weights
-        #     logger.trace("Weights sum to zero in _mean_error. Returning NaN.")
-        #     return np.nan, np.nan
+        if np.sum(weight) == 0:
+            # If all errors are zero, return mean and NaN for error
+            return np.mean(y), np.nan
         mean, sgm_mean = Binning._mean_sigma(y, weight)
         typical_err = Binning._typical_err(err)
-        # handle nan values
-        # if np.isnan(typical_err):
-        #     if np.isnan(sgm_mean):
-        #         return mean, np.nan
-        #     return mean, sgm_mean
-        # mean = np.where(np.isnan(mean), np.nanmean(y), mean)
         if typical_err > sgm_mean:
             return mean, 0.5 * (sgm_mean + typical_err)
         return mean, sgm_mean

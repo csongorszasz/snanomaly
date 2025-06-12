@@ -31,15 +31,17 @@ class MinimumObservationsPerBand(Check):
             return ValidationResult.invalid("No photometry data available", self.name)
 
         error_msgs = []
+        available_bandsets = []
         for bandset in self.bandsets:
             ok, msg = self._validate_bandset(data, bandset)
             if not ok:
                 error_msgs.append(msg)
             else:
-                data.photometry.bands.add_to_available_bandsets(bandset)
+                available_bandsets.append(bandset)
         if len(error_msgs) >= len(self.bandsets):
             return ValidationResult.invalid("\n".join(error_msgs), self.name)
-        return ValidationResult.valid(self.name) # TODO: establish logic for when to consider a candidate invalid
+        # valid if atleast one band set succeeds
+        return ValidationResult.valid(self.name, available_bandsets)
 
     def _validate_bandset(self, data: SNCandidate, bandset: Bandset) -> tuple[bool, str]:
         for band in data.photometry.bands.get_bands(bandset=bandset):

@@ -13,4 +13,4 @@ class ValidationResult(Result):
     """
 
     sn_name: str = field()
-    available_bandsets: set[Bandset] = field(factory=set)
+    available_bandsets: list[Bandset] = field(factory=list)
