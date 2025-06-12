@@ -15,8 +15,8 @@ class RegressionInterpolator(BaseInterpolator):
 
     def train(self):
         for band in self.bands_binned:
-            self.regressors[band.name] = RegressorFactory(regressor_type=self.kind, band=band, **self.interpolator_arguments)
             band.normalize()
+            self.regressors[band.name] = RegressorFactory(regressor_type=self.kind, band=band, **self.interpolator_arguments)
             band.time = band.time.reshape(-1, 1)
             self.regressors[band.name].fit(band.time, band.flux)
 

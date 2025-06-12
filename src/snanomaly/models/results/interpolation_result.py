@@ -14,5 +14,5 @@ class InterpolationResult(Result):
     peak_time: float = field()
     days_pre_peak: int = field()
     days_post_peak: int = field()
-    preds: list[np.ndarray] = field()
-    stds: list[np.ndarray] = field(default=None)
+    pred_means: list[np.ndarray] = field()
+    pred_stds: list[np.ndarray] = field()

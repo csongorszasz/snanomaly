@@ -95,6 +95,18 @@ class Band:
         """
         return [field.name for field in attrs.fields(cls) if not field.name.startswith("_")]
 
+    def get_peak_time(self) -> float:
+        peak_index = np.argmax(self.flux)
+        return self.time[peak_index]
+
+    def get_indices_relative_to_peak(self, interval: tuple[int, int]) -> np.ndarray:
+        peak_time = self.get_peak_time()
+        start_time = peak_time + interval[0]
+        end_time = peak_time + interval[1]
+        mask = (self.time >= start_time) & (self.time <= end_time)
+        indices = np.where(mask)[0]
+        return indices
+
     def normalize(self):
         """
         Normalizes the flux and error in flux of the band.
@@ -105,12 +117,12 @@ class Band:
 
         max_flux = np.max(self.flux)
         if max_flux == 0:
-            logger.warning("Band has zero (0) maximum flux, normalization skipped.")
-            return
+            self._norm_factor = 1
+        else:
+            self._norm_factor = max_flux
+            self.flux /= max_flux
+            self.e_flux /= max_flux
 
-        self._norm_factor = max_flux
-        self.flux /= max_flux
-        self.e_flux /= max_flux
         self._is_normalized = True
 
     def denormalize(self):
@@ -139,9 +151,15 @@ class Band:
 
         Convert the kept upper limits to real observations by assigning them to `0` with a `3 * upperlimit` error.
         """
-        min_real_time = self.time[~self.upperlimit].min()
-        max_real_time = self.time[~self.upperlimit].max()
-        keep_condition = self.upperlimit & ((self.time < min_real_time) | (self.time > max_real_time))
+        time_wo_uplim = self.time[~self.upperlimit]
+        if time_wo_uplim.size == 0:
+            # keep all upper limits
+            keep_condition = self.upperlimit
+        else:
+            min_real_time = time_wo_uplim.min()
+            max_real_time = time_wo_uplim.max()
+            keep_condition = self.upperlimit & ((self.time < min_real_time) | (self.time > max_real_time))
+
         upperlimit_indices_to_keep = np.where(keep_condition)[0]
         if upperlimit_indices_to_keep.size == 0:
             return self.filter_by_condition(~self.upperlimit)

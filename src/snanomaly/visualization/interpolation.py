@@ -39,6 +39,27 @@ class PlotInterpolation:
         self.set_title(self.int_result.sn_name)
         self.set_bands()
 
+    def add_model_info_annotation(self, model_name: str, **parameters):
+        model_info = f"Model: {model_name}"
+        param_strings = []
+        for param, value in parameters.items():
+            param_strings.append(f"{param}: {value}")
+        if param_strings:
+            model_info += f"<br>{', '.join(param_strings)}"
+
+        self.figure.add_annotation(
+            xref="paper",
+            yref="paper",
+            x=0.01,
+            y=0.01,
+            text=model_info,
+            showarrow=False,
+            align="left",
+            bgcolor="rgba(255, 255, 255, 0.8)",
+            bordercolor="black",
+            borderwidth=1,
+        )
+
     @property
     def max_flux_across_all(self):
         if self._max_flux_across_all:
@@ -90,7 +111,7 @@ class PlotInterpolation:
         # interpolation
         if interpolation_result:
             band_index = BaseInterpolator.get_band_index(BandEnum(band.name), self.int_result.bandset)
-            y = self.int_result.preds[band_index]
+            y = self.int_result.pred_means[band_index]
             pred_x = self.prediction_interval.ravel()
             self.figure.add_trace(
                 go.Scatter(
@@ -109,10 +130,10 @@ class PlotInterpolation:
             )
 
             # uncertainty (creating a closed polygon shape for the confidence interval bands)
-            if stds and self.int_result.stds:
+            if stds and self.int_result.pred_stds:
                 band_index = BaseInterpolator.get_band_index(BandEnum(band.name), self.int_result.bandset)
-                y = self.int_result.preds[band_index]
-                std = self.int_result.stds[band_index]
+                y = self.int_result.pred_means[band_index]
+                std = self.int_result.pred_stds[band_index]
                 self.figure.add_trace(
                     go.Scatter(
                         x=np.concatenate([pred_x, pred_x[::-1]]),
@@ -209,6 +230,9 @@ class PlotInterpolation:
             width=width, height=height,
         )
         self.figure.show()
+
+    def write_image(self, path: pathlib.Path, width: int = 600, height: int = 600):
+        self.figure.write_image(path, width=width, height=height)
 
     @staticmethod
     def show_grid(
