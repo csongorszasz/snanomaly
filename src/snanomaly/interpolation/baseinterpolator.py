@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import reduce
 
 import numpy as np
 from attrs import define, field
@@ -109,3 +110,9 @@ class BaseInterpolator(ABC):
         y[y < 0] = 0
 
         return y
+
+    @staticmethod
+    def is_nan_predictions(predictions: dict | tuple[dict, dict]) -> bool:
+        preds = predictions[0] if isinstance(predictions, tuple) else predictions
+        return all(reduce(lambda x, y: x and y, np.isnan(band_pred), True)
+               for band_pred in preds.values())

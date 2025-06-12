@@ -170,7 +170,7 @@ def one(
               help="Path to the input data file (Parquet format) that contains names of validated supernova candidates along with available band sets.")
 @click.option("-d", "--dataset", type=click.Choice(["osc2018_june", "osc2022"]), required=True,
               help="Dataset to get objects from.")
-@click.option("--method", type=click.Choice(["optimal", "gauss-uni", "kernel-ridge"]), default="optimal",
+@click.option("--method", type=click.Choice(["optimal", "gauss_uni", "kernel_ridge"]), default="optimal",
               show_default=True, help="Method to use for interpolation. (`optimal` primarily uses `gauss-uni` and where it fails, it falls back to `kernel-ridge`)")
 @click.option("--stop-after", default=None, type=int, help="Stop after processing this many candidates")
 @click.option("--silence-warnings", is_flag=True, default=False, help="Silence warnings during interpolation.")
@@ -198,6 +198,7 @@ def batch(
     methods = [Method.GAUSS_UNI, Method.KERNEL_RIDGE] if method == "optimal" else [Method(method)]
 
     skipped = []
+    method_usage_counter = [0] * len(methods)
     for row in tqdm(df.iter_rows(named=True), desc="Interpolating candidates", total=len(df)):
         val_res = ValidationResult.from_dict(row)
         try:
@@ -209,7 +210,7 @@ def batch(
             for bs in val_res.available_bandsets:
                 peak_band = BandEnum[bs.value[1]]
                 success = False
-                for method in methods:
+                for i, method in enumerate(methods):
                     if success:
                         break
                     try:
@@ -219,6 +220,9 @@ def batch(
                             silence_warnings=silence_warnings,
                         )
                         preds = interpolator.predict_from_peak((-20, 100))
+                        if BaseInterpolator.is_nan_predictions(preds):
+                            # predictions are NaNs, meaning the model fitting failed
+                            continue
 
                         plotter = _create_predictions_plot(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
                         plotter.write_image(path=out_dir_plots / f"{val_res.sn_name}_{bs.value}.png")
@@ -232,6 +236,7 @@ def batch(
                             res_df.write_parquet(out_data_path)
 
                         success = True
+                        method_usage_counter[i] += 1
                     except ValueError as ex:
                         print(f"Error: sn={val_res.sn_name} bs={bs} msg={ex}")
                         pass
@@ -243,5 +248,9 @@ def batch(
     click.echo(f"Skipped {len(skipped)} candidates:")
     for sn_name, reason in skipped:
         click.echo(f"- {sn_name}: {reason}")
+
+    click.echo("Method usage summary:")
+    for i, method in enumerate(methods):
+        click.echo(f"- {method.value}: {method_usage_counter[i]} times")
 
     click.echo(f"Results saved to `{out_dir_root}`")
