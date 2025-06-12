@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pathlib
 from typing import Optional
 
 import numpy as np
@@ -15,32 +16,66 @@ class PlotDimreduction:
     title_text: Optional[str] = field(default="")
     xlabel: str = field(default="x")
     ylabel: str = field(default="y")
-    label_name: str = field(default="Label")
+    label_name: str = field(default="Event")
     figure: go.Figure = field(factory=go.Figure, init=False)
 
     def __attrs_post_init__(self) -> None:
+        num_points = self.data_2d.shape[0]
         self.figure.update_layout(
-            title={"text": self.title_text, "x": 0.5},
-            xaxis_title=self.xlabel,
-            yaxis_title=self.ylabel,
+            title={
+                "text": self.title_text,
+                "x": 0.5,
+                "y": 0.93,
+                "font": {"size": 20},
+            },
+            xaxis_title={
+                "text": self.xlabel,
+                "font": {"size": 16},
+            },
+            yaxis_title={
+                "text": self.ylabel,
+                "font": {"size": 16},
+            },
             template="plotly_white",
             xaxis=dict(
                 showline=True,
                 showgrid=True,
-                linecolor="rgb(204, 204, 204)",
+                linecolor="rgb(128, 128, 128)",
                 linewidth=1,
-                ticks="outside",
-                gridcolor="rgb(230,230,230)",
+                mirror=True,
+                ticks="inside",
+                tickfont={"size": 14},
+                gridcolor="rgb(220,220,220)",
             ),
             yaxis=dict(
                 showline=True,
                 showgrid=True,
-                linecolor="rgb(204, 204, 204)",
+                linecolor="rgb(128, 128, 128)",
                 linewidth=1,
-                ticks="outside",
-                tickfont={"family": "Times New Roman", "size": 12, "color": "rgb(82, 82, 82)"},
-                gridcolor="rgb(230,230,230)",
+                mirror=True,
+                ticks="inside",
+                tickfont={"size": 14},
+                gridcolor="rgb(220,220,220)",
             ),
+            legend={
+                "font": {"size": 14},
+                "title_font": {"size": 15},
+            },
+            margin=go.layout.Margin(l=50, r=50, b=50, t=80, pad=4),
+            annotations=[
+                go.layout.Annotation(
+                    text=f"Number of points: {num_points}",
+                    align="left",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.01,
+                    y=0.99,
+                    bordercolor="black",
+                    borderwidth=1,
+                    font={"size": 10, "color": "black"},
+                ),
+            ],
         )
         self._plot_data()
 
@@ -80,65 +115,17 @@ class PlotDimreduction:
 
         hoverinfo = "text" if point_hover_texts is not None else "skip" # Use "skip" if no text, rely on default x,y,name
 
-        if self.labels is None:
-            self.figure.add_trace(
-                go.Scatter(
-                    x=self.data_2d[:, 0],
-                    y=self.data_2d[:, 1],
-                    mode="markers",
-                    hovertext=point_hover_texts,
-                    hoverinfo=hoverinfo if point_hover_texts else "x+y",
-                    marker={"size": 5},
-                    name="Data points",
-                ),
-            )
-        else:
-            unique_labels = np.unique(self.labels)
-            is_categorical = False
-            if self.labels.dtype == object or self.labels.dtype.kind in "SU":  # strings
-                is_categorical = True
-            elif self.labels.dtype.kind in "iu":  # integers
-                if len(unique_labels) <= 20 and len(unique_labels) < len(self.labels) / 2 : # Heuristic for categorical integers
-                    is_categorical = True
-            # Float is continuous by default
-
-            if is_categorical:
-                for label_val in unique_labels:
-                    mask = self.labels == label_val
-                    current_points_hover_texts = None
-                    if point_hover_texts:
-                        current_points_hover_texts = [ht for i, ht in enumerate(point_hover_texts) if mask[i]]
-
-                    self.figure.add_trace(
-                        go.Scatter(
-                            x=self.data_2d[mask, 0],
-                            y=self.data_2d[mask, 1],
-                            mode="markers",
-                            name=str(label_val),
-                            hovertext=current_points_hover_texts,
-                            hoverinfo=hoverinfo if current_points_hover_texts else "x+y+name",
-                            marker={"size": 7},
-                        ),
-                    )
-                self.figure.update_layout(legend_title_text=self.label_name, showlegend=True)
-            else:  # Continuous labels
-                self.figure.add_trace(
-                    go.Scatter(
-                        x=self.data_2d[:, 0],
-                        y=self.data_2d[:, 1],
-                        mode="markers",
-                        hovertext=point_hover_texts,
-                        hoverinfo=hoverinfo if point_hover_texts else "x+y", # 'z' for color data is implicit
-                        marker={
-                            "size": 7,
-                            "color": self.labels,
-                            "colorscale": "Viridis",
-                            "showscale": True,
-                            "colorbar": {"title": self.label_name},
-                        },
-                    ),
-                )
-                self.figure.update_layout(showlegend=False) # No legend needed if using a colorbar
+        self.figure.add_trace(
+            go.Scatter(
+                x=self.data_2d[:, 0],
+                y=self.data_2d[:, 1],
+                mode="markers",
+                hovertext=point_hover_texts,
+                hoverinfo=hoverinfo if point_hover_texts else "x+y",
+                marker={"size": 6, "opacity": 0.7, "line": {"width": 0.5, "color": "DarkSlateGrey"}},
+                name="Data points",
+            ),
+        )
 
     def show(self, width: int = 600, height: int = 600) -> None:
         self.figure.update_layout(
@@ -147,3 +134,5 @@ class PlotDimreduction:
         )
         self.figure.show()
 
+    def write_image(self, path: pathlib.Path, width: int = 600, height: int = 600):
+        self.figure.write_image(path, width=width, height=height)
