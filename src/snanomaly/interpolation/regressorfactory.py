@@ -83,10 +83,10 @@ class RegressorFactory:
     @classmethod
     def _gpr_uni(cls, band: Band = None, **kwargs) -> GaussianProcessRegressor:
         if "kernel" not in kwargs:
-            avg_adjacent_time_dist = np.mean(np.diff(band.time))
-            data_range = band.time.max() - band.time.min() + 1
-            logger.debug(f"band={band.name} length_scale_bounds=({float(avg_adjacent_time_dist), float(data_range)})")
-            kwargs["kernel"] = RBF(length_scale_bounds=(avg_adjacent_time_dist, max(avg_adjacent_time_dist * 1.1, data_range))) # TODO
+            max_adjacent_time_dist = np.max(np.diff(band.time))
+            kwargs["kernel"] = RBF(
+                length_scale_bounds=(min(max_adjacent_time_dist, 60), 1e4),
+            )
         if "alpha" not in kwargs and band:
             kwargs["alpha"] = band.e_flux
         if "n_restarts_optimizer" not in kwargs:
