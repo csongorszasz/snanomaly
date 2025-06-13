@@ -116,3 +116,17 @@ class BaseInterpolator(ABC):
         preds = predictions[0] if isinstance(predictions, tuple) else predictions
         return all(reduce(lambda x, y: x and y, np.isnan(band_pred), True)
                for band_pred in preds.values())
+
+    def get_predicted_peak_distance_from_closest_observation(self) -> int:
+        """
+        Returns the distance in days from the predicted peak time to the closest observation in any band.
+        """
+        if self.predicted_peak_time is None:
+            raise PeakTimeNotSetError("Set time of peak brightness before making predictions")
+
+        distances = []
+        for band in self.bands_binned:
+            closest_time = band.time[np.argmin(np.abs(band.time - self.predicted_peak_time))]
+            distances.append(np.abs(closest_time - self.predicted_peak_time))
+
+        return min(distances)

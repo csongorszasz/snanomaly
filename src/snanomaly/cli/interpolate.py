@@ -219,9 +219,14 @@ def batch(
                             peak_band=peak_band, kind=method.value, interpolator_arguments={"verbose": 0},
                             silence_warnings=silence_warnings,
                         )
+
                         preds = interpolator.predict_from_peak((-20, 100))
                         if BaseInterpolator.is_nan_predictions(preds):
-                            # predictions are NaNs, meaning the model fitting failed
+                            # If predictions are NaNs, meaning the model fitting failed
+                            continue
+
+                        if interpolator.get_predicted_peak_distance_from_closest_observation() > 60:
+                            # If the closest observation is more than 60 days away, it's probably due to of a bad fit
                             continue
 
                         plotter = _create_predictions_plot(sn=sn_obj, bandset=bs, predictions=preds, interpolator=interpolator)
