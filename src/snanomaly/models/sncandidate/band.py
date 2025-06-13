@@ -95,9 +95,25 @@ class Band:
         """
         return [field.name for field in attrs.fields(cls) if not field.name.startswith("_")]
 
+    def cut_observation_space(self, reference_time: float, interval: tuple[int, int]):
+        """
+        Cuts the observation space of the band to the specified interval relative to the reference time.
+        The interval is defined as (days before, days after) the reference time.
+        """
+        start_time = reference_time + interval[0]
+        end_time = reference_time + interval[1]
+        mask = (self.time >= start_time) & (self.time <= end_time)
+        self.time = self.time[mask]
+        self.e_time = self.e_time[mask]
+        self.flux = self.flux[mask]
+        self.e_flux = self.e_flux[mask]
+        self.upperlimit = self.upperlimit[mask]
+
     def get_peak_time(self) -> float:
-        peak_index = np.argmax(self.flux)
-        return self.time[peak_index]
+        time_no_upperlimit = self.time[~self.upperlimit]
+        flux_no_upperlimit = self.flux[~self.upperlimit]
+        peak_index = np.argmax(flux_no_upperlimit)
+        return time_no_upperlimit[peak_index]
 
     def get_indices_relative_to_peak(self, interval: tuple[int, int]) -> np.ndarray:
         peak_time = self.get_peak_time()

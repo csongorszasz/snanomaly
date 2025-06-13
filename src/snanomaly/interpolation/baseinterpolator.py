@@ -21,6 +21,7 @@ class BaseInterpolator(ABC):
     random_state: int = field(default=42)
     bands_binned: list[Band] = field(init=False, factory=list)
     silence_warnings: bool = field(default=False)
+    _observed_peak_time: float = field(init=False, default=None)
     _predicted_peak_time: float = field(init=False, default=None)
 
     def __attrs_post_init__(self):
@@ -28,14 +29,22 @@ class BaseInterpolator(ABC):
             import warnings
             warnings.filterwarnings("ignore", category=UserWarning)
 
+        self.cut_observation_space((-240, 240))
         self.bands_binned = [
             band.binned(bin_width=1).process_upper_limits() for band in self.bands.get_bands(self.bandset)
         ]
+
         self.train()
 
     @property
     def nr_bands(self):
         return len(self.bandset.value)
+
+    @property
+    def observed_peak_time(self) -> float:
+        if self._observed_peak_time:
+            return self._observed_peak_time
+        return self._find_observed_peak_time()
 
     @property
     def predicted_peak_time(self) -> float:
@@ -59,6 +68,14 @@ class BaseInterpolator(ABC):
         y = self.predict_explicit(x, self.peak_band)
         peak_idx = np.argmax(y)
         return x[peak_idx]
+
+    def _find_observed_peak_time(self) -> float:
+        band_idx = self.get_band_index(self.peak_band, self.bandset)
+        return self.bands_binned[band_idx].get_peak_time()
+
+    def cut_observation_space(self, interval_from_peak: tuple[int, int]):
+        for band in self.bands_binned:
+            band.cut_observation_space(self.observed_peak_time, interval_from_peak)
 
     @abstractmethod
     def _get_time_array_for_peak_finding(self) -> np.ndarray:
@@ -114,7 +131,7 @@ class BaseInterpolator(ABC):
     @staticmethod
     def is_nan_predictions(predictions: dict | tuple[dict, dict]) -> bool:
         preds = predictions[0] if isinstance(predictions, tuple) else predictions
-        return all(reduce(lambda x, y: x and y, np.isnan(band_pred), True)
+        return any(reduce(lambda x, y: x and y, np.isnan(band_pred), True)
                for band_pred in preds.values())
 
     def get_predicted_peak_distance_from_closest_observation(self) -> int:
