@@ -37,7 +37,6 @@ class RegressorFactory:
             kwargs["kernel"] = "rbf"
 
         alpha, gamma = cls._tune_alpha_gamma(band, verbose=verbose)
-
         kwargs["alpha"] = alpha
         kwargs["gamma"] = gamma
 
@@ -54,8 +53,8 @@ class RegressorFactory:
 
         # grid search
         param_grid = {
-            "alpha": [1e-4, 1e-3, 1e-2, 1e-1, 1.0, 1e1, 1e2, 1e3],
-            "gamma": [1e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1, 1.0, 5.0, 1e1, 5e1, 1e2, 5e2, 1e3],
+            "alpha": [1e-4, 1e-3, 1e-2, 1e-1, 1.0],
+            "gamma": [1e-2, 1e-1, 1.0],
         }
         krr = KernelRidge(kernel="rbf")
         tscv = TimeSeriesSplit(n_splits=min(5, len(band.time)-1))
