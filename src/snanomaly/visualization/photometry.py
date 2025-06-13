@@ -58,10 +58,10 @@ class PlotPhotometry:
                     "type": "data",
                     "array": band.e_flux,
                     "visible": True,
-                    "color": color, # Match error bar color with marker color
+                    "color": color,  # Match error bar color with marker color
                     "thickness": 1.5,
                 },
-                name=band.name.replace("_pr", "'"),
+                name=f"{band.name.replace('_pr', "'")} (observation)",
                 hoverinfo="text",
             ),
         )
