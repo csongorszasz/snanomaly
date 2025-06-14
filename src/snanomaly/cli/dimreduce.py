@@ -17,10 +17,14 @@ def dimreduce():
     pass
 
 
-def do_dim_reduction(inpath: pathlib.Path, reducer, dims: int, method_label: str, plot: bool):
+def do_dim_reduction(inpath: pathlib.Path, reducer, dims: int, method_label: str, plot: bool, important_params: dict):
     data_df, features = read_prepare(inpath)
 
-    run_id = f"{inpath.stem}_{method_label}_{dims}D"
+    method_description = method_label
+    for k, v in important_params.items():
+        method_description += f"_{k}{v}"
+
+    run_id = f"{inpath.stem}_{method_description}_{dims}D"
     out_dir_root = dirs.DIMREDUCED / run_id
     pathlib.Path.mkdir(out_dir_root, parents=True, exist_ok=True)
     out_img_path = out_dir_root / f"{run_id}.png"
@@ -37,7 +41,7 @@ def do_dim_reduction(inpath: pathlib.Path, reducer, dims: int, method_label: str
         plot_save(
             features_reduced=features_reduced,
             labels=data_df.get_column("sn_name").to_list(),
-            title=method_label,
+            title=method_description,
             out_path=out_img_path,
         )
 
@@ -93,6 +97,7 @@ def plot_save(
         plotter.set_title(title)
         plotter.write_image(path=out_path)
         click.echo(f"Plot saved to `{out_path}`")
+        plotter.show()
     else:
         click.echo("Plotting is only supported for 2D embeddings. Skipping plot generation.")
 
@@ -169,6 +174,7 @@ def tsne(
         dims=dims,
         method_label="TSNE",
         plot=plot,
+        important_params={"perp": perplexity, "maxiter": max_iter},
     )
 
 @dimreduce.command()
@@ -190,7 +196,7 @@ def tsne(
 @click.option("--random-state", type=int, default=42, show_default=True, help="Random state for reproducibility.")
 @click.option("--plot", is_flag=True, default=False, help="Create a plot of the reduced data.")
 @click.option(
-    "-v", "--verbosity-level", default=False, type=bool, show_default=True, help="Verbosity for the learning phase.",
+    "-v", "--verbose", is_flag=True, default=False, type=bool, show_default=True, help="Verbosity for the learning phase.",
 )
 def umap(
     inpath: pathlib.Path,
@@ -200,7 +206,7 @@ def umap(
     metric: str,
     random_state: int,
     plot: bool,
-    verbosity_level: bool,
+    verbose: bool,
 ):
     do_dim_reduction(
         inpath=inpath,
@@ -210,11 +216,12 @@ def umap(
             min_dist=min_dist,
             metric=metric,
             random_state=random_state,
-            verbose=verbosity_level,
+            verbose=verbose,
         ),
         dims=dims,
         method_label="UMAP",
         plot=plot,
+        important_params={"neighbors": n_neighbors, "mindist": min_dist},
     )
 
 

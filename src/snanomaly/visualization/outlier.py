@@ -57,12 +57,12 @@ class PlotOutlier:
             scatter_trace_params["marker"] = {
                 "size": 5,
                 "color": self.score_np,
-                "colorscale": "RdBu",
+                "colorscale": "Viridis",
                 "colorbar": {"title": "Decision Score"},
                 "line": {"width": 1, "color": "DarkSlateGrey"},
             }
             scatter_trace_params["name"] = "Data Points"
-            outlier_marker_color = "black"
+            outlier_marker_color = "red"
         else:
             raise ValueError(f"Unknown model_name: {self.model_name}")
 

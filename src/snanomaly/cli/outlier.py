@@ -188,5 +188,5 @@ def oneclasssvm(inpath: pathlib.Path, kernel: str, nu: float, gamma: str, degree
     plot_params = model_params.copy()
     plot_params["gamma"] = gamma
 
-    do_outlier_detection(inpath, model, "OneClassSVM", plot, plot_params)
+    do_outlier_detection(inpath, model, "OneClassSVM", plot, plot_params, important_params={"nu": nu, "gamma": gamma})
 
