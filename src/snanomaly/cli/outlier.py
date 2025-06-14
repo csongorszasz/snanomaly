@@ -243,10 +243,17 @@ def common_outliers(inpath: pathlib.Path, min_threshold: int):
             raise click.Abort
 
         df = pl.read_parquet(parquet_files[0])
-        outliers_in_file = df.filter(pl.col("outlier_pred") == -1)["sn_name"].to_list()
+        outliers_in_file_df = df.filter(pl.col("outlier_pred") == -1)
+        raw_rows = outliers_in_file_df.select(["sn_name", "bandset"]).rows()
+        outliers_in_file = []
+        for sn_name_val, bandset_val in raw_rows:
+            hashable_bandset = "".join(bandset_val).replace("_pr", "'")
+            outliers_in_file.append((sn_name_val, hashable_bandset))
+
         click.echo(
             f"Found {len(outliers_in_file)} outliers in `{dir_name}`: "
-            f"{', '.join(outliers_in_file[:3])}{'...' if len(outliers_in_file) > 3 else ''} "
+            f"{', '.join([f'({name}, {bandset})' for name, bandset in outliers_in_file[:3]])}"
+            f"{'...' if len(outliers_in_file) > 3 else ''} "
             f"(total {len(outliers_in_file)})",
         )
         all_outliers_flat_list.extend(outliers_in_file)
@@ -264,26 +271,6 @@ def common_outliers(inpath: pathlib.Path, min_threshold: int):
 
     outlier_counts = Counter(all_outliers_flat_list)
 
-    # if num_files_processed < min_threshold:
-    #     if num_files_processed > 0:
-    #         common_for_all = {
-    #             sn_name for sn_name, count in outlier_counts.items() if count == num_files_processed
-    #         }
-    #         click.echo(f"Common outliers across all {num_files_processed} files: {len(common_for_all)}")
-    #         for sn_name in sorted(common_for_all):
-    #             click.echo(f"- {sn_name}")
-    #     return
-    #
-    # for k_threshold in range(min_threshold, num_files_processed + 1):
-    #     current_common_outliers = {
-    #         sn_name for sn_name, count in outlier_counts.items() if count >= k_threshold
-    #     }
-    #     click.echo(f"Common outliers across {k_threshold} files: {len(current_common_outliers)}")
-    #     if current_common_outliers:
-    #         for sn_name in sorted(current_common_outliers):
-    #             click.echo(f"- {sn_name}")
-    #     click.echo("---")
-
     json_results = {}
     output_json_filename = dirs.COMMON_OUTLIERS / f"{inpath.stem}_common_outliers.json"
     pathlib.Path(output_json_filename.parent).mkdir(parents=True, exist_ok=True)
@@ -291,35 +278,32 @@ def common_outliers(inpath: pathlib.Path, min_threshold: int):
     if num_files_processed < min_threshold:
         if num_files_processed > 0:
             common_for_all = sorted(
-                [sn_name for sn_name, count in outlier_counts.items() if count == num_files_processed],
+                [outlier_tuple for outlier_tuple, count in outlier_counts.items() if count == num_files_processed],
             )
             click.echo(f"Common outliers across all {num_files_processed} files: {len(common_for_all)}")
             if common_for_all:
-                for sn_name in common_for_all:
-                    click.echo(f"- {sn_name}")
-            json_results[f"common_in_all_{num_files_processed}_files"] = common_for_all
-        else:  # num_files_processed == 0, already handled by earlier check but good for completeness
+                for sn_name, bandset in common_for_all:
+                    click.echo(f"- {sn_name} (bandset: {bandset})")
+            json_results[f"common_in_all_{num_files_processed}_files"] = [list(o) for o in common_for_all]
+        else:
             click.echo("No files were processed to find common outliers.")
-            # No JSON to write if no files processed or no outliers found.
-            # The earlier return statements handle this.
-
-    else:  # num_files_processed >= min_threshold
+    else:
         for k_threshold in range(min_threshold, num_files_processed + 1):
             current_common_outliers = sorted(
-                [sn_name for sn_name, count in outlier_counts.items() if count >= k_threshold],
+                [outlier_tuple for outlier_tuple, count in outlier_counts.items() if count >= k_threshold],
             )
             result_key = f"common_in_at_least_{k_threshold}_files"
-            json_results[result_key] = current_common_outliers
+            json_results[result_key] = [list(o) for o in current_common_outliers]
             click.echo(f"Common outliers across at least {k_threshold} files: {len(current_common_outliers)}")
             if current_common_outliers:
-                for sn_name in current_common_outliers:
-                    click.echo(f"- {sn_name}")
+                for sn_name, bandset in current_common_outliers:
+                    click.echo(f"- {sn_name} (bandset: {bandset})")
             click.echo("---")
 
-    if json_results:  # Only write if there's something to write
+    if json_results:
         with open(output_json_filename, "w") as f:
-            json.dump(json_results, f, indent=2)
+            json.dump(json_results, f, indent=4)
         click.echo(f"Common outlier results saved to `{output_json_filename}`")
-    elif num_files_processed > 0:  # If no common outliers met any threshold but files were processed
-        click.echo("No common outliers found meeting the specified criteria.")
+    elif num_files_processed > 0:
+        click.echo("No common outliers found meeting the min_threshold criteria.")
 
