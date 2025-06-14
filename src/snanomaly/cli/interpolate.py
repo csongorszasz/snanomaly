@@ -254,8 +254,15 @@ def batch(
     for sn_name, reason in skipped:
         click.echo(f"- {sn_name}: {reason}")
 
+    method_usage_summary: str = "\n".join(
+        f"- {get_display_name(method.value)}: {method_usage_counter[i]} times"
+        for i, method in enumerate(methods)
+    )
     click.echo("Method usage summary:")
-    for i, method in enumerate(methods):
-        click.echo(f"- {method.value}: {method_usage_counter[i]} times")
+    click.echo(method_usage_summary)
+    # write method usage summary to file
+    with open(out_dir_root / "info.txt", "w") as f:
+        f.write("Method usage summary:")
+        f.write(method_usage_summary)
 
     click.echo(f"Results saved to `{out_dir_root}`")

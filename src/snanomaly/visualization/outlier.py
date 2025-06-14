@@ -20,8 +20,6 @@ class PlotOutlier:
     model_name: str = field()
     model_object: IsolationForest | OneClassSVM = field()
     dataset_name: str = field()
-    dim_red_method: str = field()
-    dims_str: str = field()
     model_params_display: dict[str, Any] = field()  # For display purposes
 
     figure: go.Figure = field(factory=go.Figure, init=False)
@@ -84,9 +82,12 @@ class PlotOutlier:
             ))
 
             # Define a list of (ax, ay) offsets to cycle through for annotations
-            distances = [33, 93, 125, 164, 192, 256, 299, 351, 398, 466, 489, 522]
-            angles_deg_priority = [90, 270, 0, 180, 45, 135, 225, 315]
-            angles_deg_general = [30, 60, 120, 150, 210, 240, 300, 330]
+            # distances = [33, 93, 125, 164, 192, 256, 299, 351, 398, 466, 489, 522]
+            # angles_deg_priority = [90, 270, 0, 180, 45, 135, 225, 315]
+            # angles_deg_general = [30, 60, 120, 150, 210, 240, 300, 330]
+            distances = [50]
+            angles_deg_priority = [0]
+            angles_deg_general = [0]
 
             annotation_offsets = []
 
@@ -131,7 +132,7 @@ class PlotOutlier:
 
         # Layout and annotations
         plot_title = (
-            f"{title_prefix} applied on top of {self.dim_red_method}<br>"
+            f"{title_prefix}<br>"
             f"{num_outliers} outliers ({outlier_percentage:.2f}%)"
         )
         xaxis_title = "x"
@@ -158,8 +159,6 @@ class PlotOutlier:
                 f"n_estimators: {self.model_params_display.get('n_estimators')}",
                 f"contamination: {contam_val}",
                 f"max_samples: {self.model_params_display.get('max_samples')}",
-                f"max_features: {self.model_params_display.get('max_features')}",
-                f"random_state: {self.model_params_display.get('random_state')}",
             ])
         elif self.model_name == "OneClassSVM" and isinstance(self.model_object, OneClassSVM):
             gamma_val = self.model_params_display.get("gamma", "scale")

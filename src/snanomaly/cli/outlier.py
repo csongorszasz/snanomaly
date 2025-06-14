@@ -14,7 +14,7 @@ def outlier():
     pass
 
 
-def read_prepare_data(inpath: pathlib.Path) -> tuple[pl.DataFrame, pl.DataFrame, str, str, str]:
+def read_prepare_data(inpath: pathlib.Path) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     """
     Read and prepare data from a Parquet file (expected output from dimreduce).
     Extracts features from the 'values' column and parses metadata from the filename.
@@ -23,32 +23,7 @@ def read_prepare_data(inpath: pathlib.Path) -> tuple[pl.DataFrame, pl.DataFrame,
     input_df = pl.read_parquet(inpath)
     click.echo("OK")
 
-    stem_parts = inpath.stem.split("_")
-    dataset_name = "UnknownDataset"
-    dim_red_method = "UnknownMethod"
-    dims_str = "UnknownDims"
-
-    # Heuristic parsing: e.g., originalfile_PCA_2D -> dataset=originalfile, method=PCA, dims=2D
-    if len(stem_parts) >= 3:
-        if stem_parts[-1][:-1].isdigit() and stem_parts[-1].endswith("D"):
-            dims_str = stem_parts[-1]
-            dim_red_method = stem_parts[-2].upper()
-            dataset_name = "_".join(stem_parts[:-2])
-        elif (
-            len(stem_parts) >= 4
-            and stem_parts[-2][:-1].isdigit()
-            and stem_parts[-2].endswith("D")
-        ):  # e.g. ..._PCA_2D_results
-            dims_str = stem_parts[-2]
-            dim_red_method = stem_parts[-3].upper()
-            dataset_name = "_".join(stem_parts[:-3])
-        else:
-            dataset_name = inpath.stem
-    else:
-        dataset_name = inpath.stem
-
-    if not dataset_name:  # Handle cases where parsing might lead to empty dataset_name
-        dataset_name = inpath.stem
+    dataset_name = inpath.stem
 
     click.echo("Extracting features for outlier detection...")
     if "values" not in input_df.columns:
@@ -65,7 +40,7 @@ def read_prepare_data(inpath: pathlib.Path) -> tuple[pl.DataFrame, pl.DataFrame,
     features_for_model = pl.DataFrame(features_list, schema=feature_column_names)
 
     click.echo(f"OK. Prepared {features_for_model.shape[0]} objects, {features_for_model.shape[1]} dims.")
-    return input_df, features_for_model, dataset_name, dim_red_method, dims_str
+    return input_df, features_for_model, dataset_name
 
 
 def do_outlier_detection(
@@ -74,30 +49,30 @@ def do_outlier_detection(
     model_name: str,
     plot: bool,
     model_params_for_plot: dict,
+    important_params: dict,
 ):
     """Core logic for outlier detection: load data, fit model, save results & plot."""
-    input_df, features_for_model, dataset_name, dim_red_method, dims_str = read_prepare_data(inpath)
+    input_df, features_for_model, dataset_name = read_prepare_data(inpath)
+
+    method_description = model_name
+    for k, v in important_params.items():
+        method_description += f"_{k}{v}"
 
     base_name = inpath.stem
-    run_id = f"{base_name}_{model_name}"
+    run_id = f"{base_name}_{method_description}"
     out_dir_root = dirs.ANOMALIES / run_id
     pathlib.Path.mkdir(out_dir_root, parents=True, exist_ok=True)
 
-    out_img_path = out_dir_root / f"{run_id}_plot.png"
-    out_data_path = out_dir_root / f"{run_id}_results.parquet"
+    out_img_path = out_dir_root / f"{run_id}.png"
+    out_data_path = out_dir_root / f"{run_id}.parquet"
 
-    click.echo(f"Running {model_name}...")
+    click.echo(f"Running {method_description}...")
     features_np = features_for_model.to_numpy()
 
     pred_np = model.fit_predict(features_np)
     score_np = model.decision_function(features_np)
 
-    # Ensure sn_name is present for plotting, even if it's just generated indices
-    if "sn_name" not in input_df.columns:
-        sn_names_for_plot = [f"P{i}" for i in range(features_np.shape[0])]
-    else:
-        sn_names_for_plot = input_df["sn_name"].to_list()
-
+    sn_names_for_plot = input_df["sn_name"].to_list()
 
     results_df = input_df.with_columns([
         pl.Series(name="outlier_pred", values=pred_np),
@@ -116,14 +91,12 @@ def do_outlier_detection(
                 model_name=model_name,
                 model_object=model,
                 dataset_name=dataset_name,
-                dim_red_method=dim_red_method,
-                dims_str=dims_str,
                 model_params_display=model_params_for_plot,
             )
             plotter.write_image(out_img_path)
-            # click.echo is now handled by plotter.write_image
+            plotter.show()
         else:
-            click.echo(f"Plotting only for 2D features (found {features_for_model.shape[1]}). Skipping.")
+            click.echo(f"Plotting supported only for 2D features (found {features_for_model.shape[1]}). Skipping.")
 
 
 @outlier.command()
@@ -170,14 +143,14 @@ def isoforest(
         "max_samples": max_samples_parsed, "max_features": max_features,
         "random_state": random_state, "bootstrap": False, # Default in sklearn
     }
-    model = IsolationForest(**model_params)
+    model = IsolationForest(**model_params, verbose=2)
 
     # For plotting, pass the user-provided string for contamination if it was 'auto'
     plot_params = model_params.copy()
     plot_params["contamination"] = contamination
     plot_params["max_samples"] = max_samples
 
-    do_outlier_detection(inpath, model, "IsolationForest", plot, plot_params)
+    do_outlier_detection(inpath, model, "IsolationForest", plot, plot_params, important_params={"contam": contamination, "estimators": n_estimators, "maxsamples": max_samples})
 
 
 @outlier.command()
@@ -209,7 +182,7 @@ def oneclasssvm(inpath: pathlib.Path, kernel: str, nu: float, gamma: str, degree
         "kernel": kernel, "nu": nu, "gamma": gamma_parsed,
         "degree": degree, "coef0": coef0,
     }
-    model = OneClassSVM(**model_params)
+    model = OneClassSVM(**model_params, verbose=True)
 
     # For plotting, pass the user-provided string for gamma if it was 'scale' or 'auto'
     plot_params = model_params.copy()
