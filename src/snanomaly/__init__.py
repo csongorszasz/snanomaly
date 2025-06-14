@@ -45,6 +45,10 @@ class Directories:
     def ANOMALIES(self) -> Path:
         return self.OUTPUTS / "anomalies"
 
+    @property
+    def COMMON_OUTLIERS(self) -> Path:
+        return self.OUTPUTS / "common_outliers"
+
     def create_dirs(self) -> None:
         """Create all subdirectories."""
         # Get all property methods that represent directories (except PROJECT)

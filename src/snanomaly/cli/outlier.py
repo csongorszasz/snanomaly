@@ -1,4 +1,6 @@
+import json
 import pathlib
+from collections import Counter
 
 import click
 import polars as pl
@@ -217,7 +219,9 @@ def oneclasssvm(inpath: pathlib.Path, kernel: str, nu: float, gamma: str, degree
 @outlier.command(help="List common outliers across detections.")
 @click.option("-i", "--inpath", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True,
               help="Path to a TXT file containing a list of directories that all have a Parquet file with lists of detected outliers.")
-def common_outliers(inpath: pathlib.Path):
+@click.option("-m", "--min-threshold", type=int, default=2, show_default=True, help=
+              "Minimum number of files in which an outlier must be detected to be considered common.")
+def common_outliers(inpath: pathlib.Path, min_threshold: int):
     """List common outliers between multiple outlier detection runs."""
     with inpath.open() as f:
         dir_names = [line.strip() for line in f if line.strip()]
@@ -226,7 +230,8 @@ def common_outliers(inpath: pathlib.Path):
         click.echo("Error: No directories found in the input file.")
         raise click.Abort
 
-    common_outliers = set()
+    all_outliers_flat_list = []
+    num_files_processed = 0
     for dir_name in dir_names:
         dir_path = dirs.ANOMALIES / dir_name
         if not dir_path.is_dir():
@@ -238,13 +243,83 @@ def common_outliers(inpath: pathlib.Path):
             raise click.Abort
 
         df = pl.read_parquet(parquet_files[0])
-        outliers = df.filter(pl.col("outlier_pred") == -1)["sn_name"].to_list()
-        click.echo(f"Found {len(outliers)} outliers in `{dir_name}`: {', '.join(outliers[:5])}... (total {len(outliers)})")
+        outliers_in_file = df.filter(pl.col("outlier_pred") == -1)["sn_name"].to_list()
+        click.echo(
+            f"Found {len(outliers_in_file)} outliers in `{dir_name}`: "
+            f"{', '.join(outliers_in_file[:3])}{'...' if len(outliers_in_file) > 3 else ''} "
+            f"(total {len(outliers_in_file)})",
+        )
+        all_outliers_flat_list.extend(outliers_in_file)
+        num_files_processed += 1
 
-        common_outliers.intersection_update(outliers)
+    if not all_outliers_flat_list:
+        click.echo("No outliers found in any of the processed files.")
+        return
 
-    click.echo(f"Inspected {len(dir_names)} files.")
+    if num_files_processed == 0:
+        click.echo("No valid outlier files processed.")
+        return
 
-    click.echo(f"Common outliers across all files: {len(common_outliers)}")
-    for sn_name in sorted(common_outliers):
-        click.echo(f"- {sn_name}")
+    click.echo(f"Inspected {num_files_processed} files.")
+
+    outlier_counts = Counter(all_outliers_flat_list)
+
+    # if num_files_processed < min_threshold:
+    #     if num_files_processed > 0:
+    #         common_for_all = {
+    #             sn_name for sn_name, count in outlier_counts.items() if count == num_files_processed
+    #         }
+    #         click.echo(f"Common outliers across all {num_files_processed} files: {len(common_for_all)}")
+    #         for sn_name in sorted(common_for_all):
+    #             click.echo(f"- {sn_name}")
+    #     return
+    #
+    # for k_threshold in range(min_threshold, num_files_processed + 1):
+    #     current_common_outliers = {
+    #         sn_name for sn_name, count in outlier_counts.items() if count >= k_threshold
+    #     }
+    #     click.echo(f"Common outliers across {k_threshold} files: {len(current_common_outliers)}")
+    #     if current_common_outliers:
+    #         for sn_name in sorted(current_common_outliers):
+    #             click.echo(f"- {sn_name}")
+    #     click.echo("---")
+
+    json_results = {}
+    output_json_filename = dirs.COMMON_OUTLIERS / f"{inpath.stem}_common_outliers.json"
+    pathlib.Path(output_json_filename.parent).mkdir(parents=True, exist_ok=True)
+
+    if num_files_processed < min_threshold:
+        if num_files_processed > 0:
+            common_for_all = sorted(
+                [sn_name for sn_name, count in outlier_counts.items() if count == num_files_processed],
+            )
+            click.echo(f"Common outliers across all {num_files_processed} files: {len(common_for_all)}")
+            if common_for_all:
+                for sn_name in common_for_all:
+                    click.echo(f"- {sn_name}")
+            json_results[f"common_in_all_{num_files_processed}_files"] = common_for_all
+        else:  # num_files_processed == 0, already handled by earlier check but good for completeness
+            click.echo("No files were processed to find common outliers.")
+            # No JSON to write if no files processed or no outliers found.
+            # The earlier return statements handle this.
+
+    else:  # num_files_processed >= min_threshold
+        for k_threshold in range(min_threshold, num_files_processed + 1):
+            current_common_outliers = sorted(
+                [sn_name for sn_name, count in outlier_counts.items() if count >= k_threshold],
+            )
+            result_key = f"common_in_at_least_{k_threshold}_files"
+            json_results[result_key] = current_common_outliers
+            click.echo(f"Common outliers across at least {k_threshold} files: {len(current_common_outliers)}")
+            if current_common_outliers:
+                for sn_name in current_common_outliers:
+                    click.echo(f"- {sn_name}")
+            click.echo("---")
+
+    if json_results:  # Only write if there's something to write
+        with open(output_json_filename, "w") as f:
+            json.dump(json_results, f, indent=2)
+        click.echo(f"Common outlier results saved to `{output_json_filename}`")
+    elif num_files_processed > 0:  # If no common outliers met any threshold but files were processed
+        click.echo("No common outliers found meeting the specified criteria.")
+
