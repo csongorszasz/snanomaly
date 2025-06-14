@@ -213,3 +213,38 @@ def oneclasssvm(inpath: pathlib.Path, kernel: str, nu: float, gamma: str, degree
 
     do_outlier_detection(inpath, model, "OneClassSVM", plot, plot_params, important_params={"nu": nu, "gamma": gamma})
 
+
+@outlier.command(help="List common outliers across detections.")
+@click.option("-i", "--inpath", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path), required=True,
+              help="Path to a TXT file containing a list of directories that all have a Parquet file with lists of detected outliers.")
+def common_outliers(inpath: pathlib.Path):
+    """List common outliers between multiple outlier detection runs."""
+    with inpath.open() as f:
+        dir_names = [line.strip() for line in f if line.strip()]
+
+    if not dir_names:
+        click.echo("Error: No directories found in the input file.")
+        raise click.Abort
+
+    common_outliers = set()
+    for dir_name in dir_names:
+        dir_path = dirs.ANOMALIES / dir_name
+        if not dir_path.is_dir():
+            click.echo(f"Error: {dir_name} is not a directory.")
+            raise click.Abort
+        parquet_files = list(dir_path.glob("*.parquet"))
+        if not parquet_files:
+            click.echo(f"Error: No Parquet files found in directory {dir_name}.")
+            raise click.Abort
+
+        df = pl.read_parquet(parquet_files[0])
+        outliers = df.filter(pl.col("outlier_pred") == -1)["sn_name"].to_list()
+        click.echo(f"Found {len(outliers)} outliers in `{dir_name}`: {', '.join(outliers[:5])}... (total {len(outliers)})")
+
+        common_outliers.intersection_update(outliers)
+
+    click.echo(f"Inspected {len(dir_names)} files.")
+
+    click.echo(f"Common outliers across all files: {len(common_outliers)}")
+    for sn_name in sorted(common_outliers):
+        click.echo(f"- {sn_name}")
