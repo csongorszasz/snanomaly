@@ -52,6 +52,29 @@ def do_outlier_detection(
     important_params: dict,
 ):
     """Core logic for outlier detection: load data, fit model, save results & plot."""
+    if inpath.is_dir():
+        # Find a parquet file in the directory
+        parquet_files = list(inpath.glob("*.parquet"))
+        if not parquet_files:
+            click.echo(f"Error: No Parquet files found in directory {inpath}.")
+            raise click.Abort
+        inpath = parquet_files[0]
+    elif inpath.suffix == ".txt":  # File with a list of directory names
+        # Go through the list of directory names, find the belonging Parquet file and run the outlier detection on each of them
+        with inpath.open() as f:
+            dir_names = [line.strip() for line in f if line.strip()]
+        for dir_name in dir_names:
+            dir_path = dirs.DIMREDUCED / dir_name
+            if not dir_path.is_dir():
+                click.echo(f"Error: {dir_name} is not a directory.")
+                raise click.Abort
+            parquet_files = list(dir_path.glob("*.parquet"))
+            if not parquet_files:
+                click.echo(f"Error: No Parquet files found in directory {dir_name}.")
+                raise click.Abort
+            do_outlier_detection(parquet_files[0], model, model_name, plot, model_params_for_plot, important_params)
+        return
+
     input_df, features_for_model, dataset_name = read_prepare_data(inpath)
 
     method_description = model_name
