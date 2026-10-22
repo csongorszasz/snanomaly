@@ -1,0 +1,2344 @@
+{
+    "common_in_at_least_2_files": [
+        [
+            "AT2016cyn",
+            "BRI"
+        ],
+        [
+            "DES17X1boj",
+            "gri"
+        ],
+        [
+            "Gaia15acp",
+            "gri"
+        ],
+        [
+            "Gaia16ajq",
+            "gri"
+        ],
+        [
+            "Gaia16arj",
+            "BRI"
+        ],
+        [
+            "Gaia16atn",
+            "BRI"
+        ],
+        [
+            "Gaia16att",
+            "BRI"
+        ],
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "Gaia16azl",
+            "BRI"
+        ],
+        [
+            "Gaia17agy",
+            "gri"
+        ],
+        [
+            "OGLE-2012-SN-006",
+            "BRI"
+        ],
+        [
+            "PS1-11cn",
+            "gri"
+        ],
+        [
+            "PTF12mxx",
+            "gri"
+        ],
+        [
+            "SDSS-II SN 10314",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 10371",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1237",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 12922",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 12974",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13123",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13620",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13842",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13891",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13909",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14043",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14065",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14170",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14203",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14295",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14306",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14382",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14426",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14513",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14515",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14552",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14584",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14809",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14829",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14861",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14875",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14896",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14923",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14933",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14989",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15035",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15052",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15119",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15186",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15264",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15293",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15324",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15395",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15407",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15502",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15503",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15569",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15730",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15745",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15759",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15817",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15913",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15992",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16012",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16030",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16120",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16170",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16237",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16293",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16298",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16439",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16457",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16550",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16570",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17054",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17076",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17292",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17443",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17509",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17637",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17644",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17756",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17810",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17837",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17874",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1796",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17989",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18009",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18012",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18034",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18092",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18099",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18104",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18185",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18228",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18280",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18374",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18405",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18688",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18726",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18772",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18812",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18884",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18964",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19097",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19099",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19115",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19134",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19212",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19215",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19319",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19335",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19349",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19408",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19412",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19417",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19467",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19518",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19541",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1961",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19725",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19770",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1982",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20065",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20082",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20246",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20265",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20267",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20516",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20627",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20662",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20685",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20861",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21080",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21317",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21364",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21371",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21400",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21451",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21474",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21475",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21553",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21608",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21648",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21761",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 22086",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3294",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3506",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3565",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3705",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3738",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3871",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4029",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4206",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4414",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4455",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4627",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5126",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5164",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5279",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5359",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5681",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5723",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5725",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5786",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5803",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5858",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5943",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5993",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 6120",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 6149",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7373",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7527",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7706",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7713",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7804",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7939",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 8432",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 8705",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 8978",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 9117",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 9268",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 9640",
+            "g'r'i'"
+        ],
+        [
+            "SN1978K",
+            "BRI"
+        ],
+        [
+            "SN1991S",
+            "BRI"
+        ],
+        [
+            "SN1992A",
+            "BRI"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1994Y",
+            "BRI"
+        ],
+        [
+            "SN1997D",
+            "BRI"
+        ],
+        [
+            "SN1998ef",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2000cu",
+            "BRI"
+        ],
+        [
+            "SN2001dc",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2001fe",
+            "BRI"
+        ],
+        [
+            "SN2001gb",
+            "BRI"
+        ],
+        [
+            "SN2001gc",
+            "BRI"
+        ],
+        [
+            "SN2003ai",
+            "BRI"
+        ],
+        [
+            "SN2003ho",
+            "BRI"
+        ],
+        [
+            "SN2004ey",
+            "BRI"
+        ],
+        [
+            "SN2005ap",
+            "BRI"
+        ],
+        [
+            "SN2005bp",
+            "BRI"
+        ],
+        [
+            "SN2005gg",
+            "g'r'i'"
+        ],
+        [
+            "SN2005in",
+            "g'r'i'"
+        ],
+        [
+            "SN2005jq",
+            "g'r'i'"
+        ],
+        [
+            "SN2006D",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2006kl",
+            "g'r'i'"
+        ],
+        [
+            "SN2006ll",
+            "g'r'i'"
+        ],
+        [
+            "SN2006lp",
+            "g'r'i'"
+        ],
+        [
+            "SN2006mh",
+            "g'r'i'"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ],
+        [
+            "SN2007bj",
+            "BRI"
+        ],
+        [
+            "SN2007ca",
+            "BRI"
+        ],
+        [
+            "SN2007cq",
+            "BRI"
+        ],
+        [
+            "SN2007fr",
+            "BRI"
+        ],
+        [
+            "SN2007kt",
+            "g'r'i'"
+        ],
+        [
+            "SN2007lz",
+            "g'r'i'"
+        ],
+        [
+            "SN2007mu",
+            "g'r'i'"
+        ],
+        [
+            "SN2007mv",
+            "g'r'i'"
+        ],
+        [
+            "SN2007nr",
+            "g'r'i'"
+        ],
+        [
+            "SN2007oz",
+            "g'r'i'"
+        ],
+        [
+            "SN2008S",
+            "BRI"
+        ],
+        [
+            "SN2008Z",
+            "BRI"
+        ],
+        [
+            "SN2008ar",
+            "BRI"
+        ],
+        [
+            "SN2008bf",
+            "BRI"
+        ],
+        [
+            "SN2010id",
+            "BRI"
+        ],
+        [
+            "SN2011ht",
+            "BRI"
+        ],
+        [
+            "SN2012fr",
+            "BRI"
+        ],
+        [
+            "SN2016cyr",
+            "BRI"
+        ],
+        [
+            "SN2016gkg",
+            "gri"
+        ],
+        [
+            "SN2016ija",
+            "gri"
+        ],
+        [
+            "SN2017ckx",
+            "gri"
+        ],
+        [
+            "SNLS-03D1bm",
+            "gri"
+        ],
+        [
+            "SNLS-03D4cw",
+            "gri"
+        ],
+        [
+            "SNLS-03D4di",
+            "gri"
+        ],
+        [
+            "SNLS-03D4gg",
+            "gri"
+        ],
+        [
+            "SNLS-04D1de",
+            "gri"
+        ],
+        [
+            "SNLS-04D1ff",
+            "gri"
+        ],
+        [
+            "SNLS-04D1ks",
+            "gri"
+        ],
+        [
+            "SNLS-04D2ca",
+            "gri"
+        ],
+        [
+            "SNLS-04D2cw",
+            "gri"
+        ],
+        [
+            "SNLS-04D4ii",
+            "gri"
+        ],
+        [
+            "SNLS-04D4jw",
+            "gri"
+        ],
+        [
+            "SNLS-05D1cl",
+            "gri"
+        ],
+        [
+            "SNLS-05D1iz",
+            "gri"
+        ],
+        [
+            "SNLS-05D2ay",
+            "gri"
+        ],
+        [
+            "SNLS-05D2bk",
+            "gri"
+        ],
+        [
+            "SNLS-05D2fq",
+            "gri"
+        ],
+        [
+            "SNLS-05D3la",
+            "gri"
+        ],
+        [
+            "SNLS-05D4bj",
+            "gri"
+        ],
+        [
+            "SNLS-05D4dw",
+            "gri"
+        ],
+        [
+            "SNLS-06D2cb",
+            "gri"
+        ],
+        [
+            "SNLS-06D2ce",
+            "gri"
+        ],
+        [
+            "SNLS-06D3cb",
+            "gri"
+        ]
+    ],
+    "common_in_at_least_3_files": [
+        [
+            "AT2016cyn",
+            "BRI"
+        ],
+        [
+            "Gaia16ajq",
+            "gri"
+        ],
+        [
+            "Gaia16arj",
+            "BRI"
+        ],
+        [
+            "Gaia16atn",
+            "BRI"
+        ],
+        [
+            "Gaia16att",
+            "BRI"
+        ],
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "Gaia16azl",
+            "BRI"
+        ],
+        [
+            "Gaia17agy",
+            "gri"
+        ],
+        [
+            "PS1-11cn",
+            "gri"
+        ],
+        [
+            "PTF12mxx",
+            "gri"
+        ],
+        [
+            "SDSS-II SN 10371",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 12922",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 13891",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14043",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14203",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14306",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14426",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14515",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14584",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14809",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14861",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14875",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14896",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14923",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14933",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15052",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15119",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15264",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15293",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15502",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15503",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15730",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15759",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15817",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15913",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16030",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16120",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16237",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16293",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16298",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16457",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16550",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17054",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17076",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17443",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17509",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17644",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17756",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17810",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17874",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1796",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17989",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18034",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18104",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18185",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18228",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18374",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18405",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18688",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18884",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19212",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19335",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19349",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19408",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19412",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19417",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19467",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1961",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19770",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20065",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20267",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20627",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20662",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21317",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21400",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21474",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21475",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21553",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21608",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 22086",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3294",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3506",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3565",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3738",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3871",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4414",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4455",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5126",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5279",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5359",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5725",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5803",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5858",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5943",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7373",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7527",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7706",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7713",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7804",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 8978",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 9640",
+            "g'r'i'"
+        ],
+        [
+            "SN1978K",
+            "BRI"
+        ],
+        [
+            "SN1991S",
+            "BRI"
+        ],
+        [
+            "SN1992A",
+            "BRI"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1997D",
+            "BRI"
+        ],
+        [
+            "SN1998ef",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2000cu",
+            "BRI"
+        ],
+        [
+            "SN2001dc",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2001fe",
+            "BRI"
+        ],
+        [
+            "SN2001gb",
+            "BRI"
+        ],
+        [
+            "SN2003ai",
+            "BRI"
+        ],
+        [
+            "SN2003ho",
+            "BRI"
+        ],
+        [
+            "SN2004ey",
+            "BRI"
+        ],
+        [
+            "SN2005ap",
+            "BRI"
+        ],
+        [
+            "SN2005bp",
+            "BRI"
+        ],
+        [
+            "SN2005gg",
+            "g'r'i'"
+        ],
+        [
+            "SN2005in",
+            "g'r'i'"
+        ],
+        [
+            "SN2005jq",
+            "g'r'i'"
+        ],
+        [
+            "SN2006D",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2006kl",
+            "g'r'i'"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ],
+        [
+            "SN2007bj",
+            "BRI"
+        ],
+        [
+            "SN2007cq",
+            "BRI"
+        ],
+        [
+            "SN2007kt",
+            "g'r'i'"
+        ],
+        [
+            "SN2007lz",
+            "g'r'i'"
+        ],
+        [
+            "SN2007mu",
+            "g'r'i'"
+        ],
+        [
+            "SN2007mv",
+            "g'r'i'"
+        ],
+        [
+            "SN2007oz",
+            "g'r'i'"
+        ],
+        [
+            "SN2008S",
+            "BRI"
+        ],
+        [
+            "SN2008Z",
+            "BRI"
+        ],
+        [
+            "SN2011ht",
+            "BRI"
+        ],
+        [
+            "SN2016cyr",
+            "BRI"
+        ],
+        [
+            "SN2016ija",
+            "gri"
+        ],
+        [
+            "SN2017ckx",
+            "gri"
+        ],
+        [
+            "SNLS-03D4cw",
+            "gri"
+        ],
+        [
+            "SNLS-03D4di",
+            "gri"
+        ],
+        [
+            "SNLS-04D1ff",
+            "gri"
+        ],
+        [
+            "SNLS-04D2ca",
+            "gri"
+        ],
+        [
+            "SNLS-04D4jw",
+            "gri"
+        ],
+        [
+            "SNLS-05D2ay",
+            "gri"
+        ],
+        [
+            "SNLS-05D2bk",
+            "gri"
+        ],
+        [
+            "SNLS-05D2fq",
+            "gri"
+        ],
+        [
+            "SNLS-05D4bj",
+            "gri"
+        ],
+        [
+            "SNLS-05D4dw",
+            "gri"
+        ],
+        [
+            "SNLS-06D2cb",
+            "gri"
+        ]
+    ],
+    "common_in_at_least_4_files": [
+        [
+            "Gaia16atn",
+            "BRI"
+        ],
+        [
+            "Gaia16att",
+            "BRI"
+        ],
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "Gaia16azl",
+            "BRI"
+        ],
+        [
+            "SDSS-II SN 14043",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14203",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14515",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14809",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14875",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14933",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15119",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15264",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15502",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15913",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16030",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 16120",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17054",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17076",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17644",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17810",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1796",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17989",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18034",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18185",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18374",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19417",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19770",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 20627",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 22086",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3506",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3565",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3738",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3871",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4414",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5126",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5725",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5858",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 7373",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 9640",
+            "g'r'i'"
+        ],
+        [
+            "SN1978K",
+            "BRI"
+        ],
+        [
+            "SN1991S",
+            "BRI"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1997D",
+            "BRI"
+        ],
+        [
+            "SN1998ef",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dc",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2001fe",
+            "BRI"
+        ],
+        [
+            "SN2001gb",
+            "BRI"
+        ],
+        [
+            "SN2003ai",
+            "BRI"
+        ],
+        [
+            "SN2005gg",
+            "g'r'i'"
+        ],
+        [
+            "SN2005in",
+            "g'r'i'"
+        ],
+        [
+            "SN2005jq",
+            "g'r'i'"
+        ],
+        [
+            "SN2006D",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2006kl",
+            "g'r'i'"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ],
+        [
+            "SN2007cq",
+            "BRI"
+        ],
+        [
+            "SN2007kt",
+            "g'r'i'"
+        ],
+        [
+            "SN2008S",
+            "BRI"
+        ],
+        [
+            "SN2016ija",
+            "gri"
+        ],
+        [
+            "SN2017ckx",
+            "gri"
+        ],
+        [
+            "SNLS-03D4di",
+            "gri"
+        ],
+        [
+            "SNLS-04D2ca",
+            "gri"
+        ],
+        [
+            "SNLS-05D2ay",
+            "gri"
+        ],
+        [
+            "SNLS-05D2bk",
+            "gri"
+        ],
+        [
+            "SNLS-05D4dw",
+            "gri"
+        ]
+    ],
+    "common_in_at_least_5_files": [
+        [
+            "Gaia16att",
+            "BRI"
+        ],
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "Gaia16azl",
+            "BRI"
+        ],
+        [
+            "SDSS-II SN 14515",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15502",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17054",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17644",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1796",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17989",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18034",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18185",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19770",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 21596",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3506",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3565",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 4414",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 5126",
+            "g'r'i'"
+        ],
+        [
+            "SN1978K",
+            "BRI"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1997D",
+            "BRI"
+        ],
+        [
+            "SN1998ef",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dc",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2001fe",
+            "BRI"
+        ],
+        [
+            "SN2001gb",
+            "BRI"
+        ],
+        [
+            "SN2003ai",
+            "BRI"
+        ],
+        [
+            "SN2005jq",
+            "g'r'i'"
+        ],
+        [
+            "SN2006D",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ],
+        [
+            "SN2007kt",
+            "g'r'i'"
+        ],
+        [
+            "SNLS-05D2bk",
+            "gri"
+        ],
+        [
+            "SNLS-05D4dw",
+            "gri"
+        ]
+    ],
+    "common_in_at_least_6_files": [
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "Gaia16azl",
+            "BRI"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15502",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17644",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 1796",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18034",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18307",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 19770",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 3565",
+            "g'r'i'"
+        ],
+        [
+            "SN1978K",
+            "BRI"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2001gb",
+            "BRI"
+        ],
+        [
+            "SN2005jq",
+            "g'r'i'"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ],
+        [
+            "SN2007kt",
+            "g'r'i'"
+        ],
+        [
+            "SNLS-05D4dw",
+            "gri"
+        ]
+    ],
+    "common_in_at_least_7_files": [
+        [
+            "Gaia16avf",
+            "BRI"
+        ],
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 15606",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 17781",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SN1993Z",
+            "BRI"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ],
+        [
+            "SN2007bi",
+            "BRI"
+        ]
+    ],
+    "common_in_at_least_8_files": [
+        [
+            "SDSS-II SN 14751",
+            "g'r'i'"
+        ],
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ]
+    ],
+    "common_in_at_least_9_files": [
+        [
+            "SDSS-II SN 18145",
+            "g'r'i'"
+        ],
+        [
+            "SN1999bi",
+            "BRI"
+        ],
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ]
+    ],
+    "common_in_at_least_10_files": [
+        [
+            "SN2001dp",
+            "BRI"
+        ],
+        [
+            "SN2006jc",
+            "BRI"
+        ]
+    ]
+}
