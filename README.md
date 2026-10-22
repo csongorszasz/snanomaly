@@ -24,22 +24,18 @@ _Anomalies_ are light curves that exhibit supernova-like properties but do not e
 
 ### Light curve approximation (building a continuous light curve from observations)
 > Error bars show the uncertainty of an observation data point; shaded areas show the uncertainty of a light curve approximation.
-
 ![SN2016ija_('g', 'r', 'i')](https://github.com/user-attachments/assets/715efcf1-cfe1-48f2-a56e-c50495eeeba2)
 
 ### Dimensionality reduction (2D projection of light curves, clustered by similarity)
 
 > Top row: t-SNE; bottom row: UMAP.
-
 ![results/figures/dim-reduction/tsne_umap_5_configs.png](results/figures/dim-reduction/tsne_umap_5_configs.png)
 
 ### Anomaly detection (identifying outlier light curves)
 > Lower _decision score_ and _anomaly score_ mean less normal behaviour. The circled points are only _candidate_ outliers.
-
 ![osc2018_june_20250613203034_UMAP_neighbors100_mindist0.1_2D_IsolationForest_contam0.01_estimators1000_maxsamples5071.png](results/figures/outlier-detection/osc2018_june_20250613203034_UMAP_neighbors100_mindist0.1_2D_IsolationForest_contam0.01_estimators1000_maxsamples5071.png)
 ![osc2018_june_20250613203034_UMAP_neighbors100_mindist0.1_2D_OneClassSVM_nu0.01_gammascale.png](results/figures/outlier-detection/osc2018_june_20250613203034_UMAP_neighbors100_mindist0.1_2D_OneClassSVM_nu0.01_gammascale.png)
-
-> Notice how the above two methods (1. Isolation Forest, 2. One-class SVM) flag a different subset of outliers. The intersection of the subsets gives a more confident result than relying on the output of a single model family. Pruzhinskaya et al. use the output of only the Isolation Forest.
+Notice how the above two methods (1. Isolation Forest, 2. One-class SVM) flag a different subset of outliers. The intersection of the subsets gives a more confident result than relying on the output of a single model family. Pruzhinskaya et al. use the output of only the Isolation Forest.
 
 # Results
 
