@@ -1,8 +1,27 @@
-## Abstract
+<div align="center">
+
+Bachelor's Thesis · 2025
+
+---
+
+# Detection of unusual astronomical events in supernova catalogues
+
+
+**Csongor Szász**
+
+Advisor: Zalán Bodó, PhD., Associate Professor
+
+---
+
+**Abstract**
+
+</div>
 
 The number of [supernova](https://en.wikipedia.org/wiki/Supernova) discoveries per year has been rapidly growing, with only [538 events in the year 2010](https://doi.org/10.1086/671483), while [in 2024 alone it reached 23887 (>4300% increase)](https://www.rochesterastronomy.org/sn2024/snstats.html). With the launch of new, more advanced sky surveys like the [Legacy Survey of Space and Time (LSST)](https://rubinobservatory.org/),
 supernova candidates will grow to the hundreds of thousands or even millions per year. Misclassifications are inevitable and verifying so many events manually quickly becomes unmanageable. This poses the need to automate flagging potentially anomalous candidates in order to
 clean the dataset. To date, there are only a handful of publicly known projects trying to solve this exact problem of anomaly detection across supernova candidates. This thesis is an attempt at improving the accuracy of the anomaly detection pipeline presented in the paper: [Anomaly Detection in the Open Supernova Catalog (Pruzhinskaya M. et al. 2019)](https://academic.oup.com/mnras/article/489/3/3591/5554761?login=false). My approach consists of modifying or replacing the regression, the dimensionality reduction, and the outlier detection algorithms with other methods.
+
+---
 
 # Main contributions
 1. **Dimensionality reduction.** Addition of Uniform Manifold Approximation and Projection (UMAP), known to preserve both local and global topological structures, in contrast to the used t-distributed Stochastic Neighbor Embedding (t-SNE) which does not preserve global distances or densities.
