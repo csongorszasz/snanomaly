@@ -1,7 +1,5 @@
 <div align="center">
 
-Bachelor's Thesis · 2025
-
 ---
 
 # Detection of unusual astronomical events in supernova catalogues
@@ -10,6 +8,10 @@ Bachelor's Thesis · 2025
 **Csongor Szász**
 
 Advisor: Zalán Bodó, PhD., Associate Professor
+
+Babeș-Bolyai University of Cluj-Napoca, Faculty of Mathematics and Computer Science
+
+Bachelor's Thesis · 2025
 
 ---
 
